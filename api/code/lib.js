@@ -177,11 +177,15 @@ function romeWallTimeToUtc(y, m, d, hh, mm) {
 
 function seedToDocs(seed, now) {
   const today = romeParts(now);
-  return (seed || []).map((entry) => {
+  return (seed || []).map((entry, index) => {
     const { daysAgo = 0, time = '09:00', ...rest } = entry;
     const day = new Date(Date.UTC(+today.year, +today.month - 1, +today.day - daysAgo));
     const [hh, mm] = String(time).split(':').map(Number);
-    const at = romeWallTimeToUtc(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate(), hh, mm).toISOString();
+    let date = romeWallTimeToUtc(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate(), hh, mm);
+    // Dopo il reset notturno l'orario di una nota di oggi può non essere ancora arrivato:
+    // la si data poco prima di adesso, mantenendo l'ordine del seed.
+    if (date > now) date = new Date(now.getTime() - (index + 1) * 60000);
+    const at = date.toISOString();
     return { ...rest, isSample: true, ownerId: null, deletedAt: null, createdAt: at, updatedAt: at };
   });
 }

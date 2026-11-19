@@ -179,9 +179,24 @@ test('seedToDocs dates relative to now', () => {
 });
 
 test('seedToDocs counts days in Rome, not UTC', () => {
-  // 23:30 UTC del 19/11 è già il 20/11 a Roma: "oggi" è il 20.
-  const [doc] = lib.seedToDocs([{ title: 'T', content: 'C', type: 'note', tags: [], isFavorite: false, daysAgo: 0, time: '09:00' }], new Date('2026-11-19T23:30:00Z'));
-  assert.equal(doc.createdAt, '2026-11-20T08:00:00.000Z');
+  // 23:30 UTC del 19/11 è già il 20/11 a Roma: "oggi" è il 20, "ieri" il 19.
+  const [doc] = lib.seedToDocs([{ title: 'T', content: 'C', type: 'note', tags: [], isFavorite: false, daysAgo: 1, time: '09:00' }], new Date('2026-11-19T23:30:00Z'));
+  assert.equal(doc.createdAt, '2026-11-19T08:00:00.000Z');
+});
+
+test('seedToDocs never dates today\'s notes in the future', () => {
+  // Reset delle 3 di notte a Roma: le note di oggi delle 10:12 e delle 09:00 non sono ancora avvenute.
+  const now = new Date('2026-11-20T02:17:00Z');
+  const note = (time) => ({ title: 'T', content: 'C', type: 'note', tags: [], isFavorite: false, daysAgo: 0, time });
+  const docs = lib.seedToDocs([note('00:30'), note('10:12'), note('09:00')], now);
+  assert.equal(docs[0].createdAt, '2026-11-19T23:30:00.000Z');
+  // indice nel seed + 1 minuti prima di adesso
+  assert.equal(docs[1].createdAt, '2026-11-20T02:15:00.000Z');
+  assert.equal(docs[2].createdAt, '2026-11-20T02:14:00.000Z');
+  for (const doc of docs) {
+    assert.ok(doc.createdAt <= now.toISOString());
+    assert.equal(doc.updatedAt, doc.createdAt);
+  }
 });
 
 test('buildMarkdown', () => {
