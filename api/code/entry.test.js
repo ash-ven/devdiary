@@ -284,6 +284,70 @@ test('exportJsonResult returns public notes', () => {
   assert.equal('ownerId' in r.payload[0], false);
 });
 
+// ---------- reset della demo ----------
+
+const SEED = [
+  { title: 'Uno', content: 'C', type: 'note', language: null, code: null, tags: [], isFavorite: false, daysAgo: 0, time: '09:00' },
+  { title: 'Due', content: 'C', type: 'idea', language: null, code: null, tags: ['x'], isFavorite: true, daysAgo: 3, time: '18:30' },
+];
+
+test('resetPrepare rejects missing token', () => {
+  const r = call('resetPrepare', { json: { query: {}, headers: {} } });
+  assert.equal(r.status, 401);
+  assert.equal(code(r), 'RESET_UNAUTHORIZED');
+});
+
+test('resetPrepare rejects wrong token', () => {
+  assert.equal(code(call('resetPrepare', { json: { query: {}, headers: { 'x-reset-token': 'sbagliato' } } })), 'RESET_UNAUTHORIZED');
+});
+
+test('resetPrepare rejects everything when no token is configured', () => {
+  const r = call('resetPrepare', { json: { query: {}, headers: { 'x-reset-token': '' } }, config: { ...OFF, resetToken: '' } });
+  assert.equal(code(r), 'RESET_UNAUTHORIZED');
+});
+
+test('resetPrepare accepts the right token', () => {
+  const r = call('resetPrepare', { json: { query: { ifEmpty: 'true' }, headers: { 'x-reset-token': 'secret' } } });
+  assert.equal(r.ok, true);
+  assert.equal(r.ifEmpty, true);
+});
+
+test('resetPlan skips when not empty and ifEmpty', () => {
+  const r = call('resetPlan', { items: [{ n: 7 }], refs: { resetPrepare: { ok: true, ifEmpty: true } } });
+  assert.equal(r.ok, false, 'non prosegue verso la cancellazione');
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.payload, { success: true, message: 'Demo già pronta', entries: 7 });
+});
+
+test('resetPlan proceeds without ifEmpty', () => {
+  assert.equal(call('resetPlan', { items: [{ n: 7 }], refs: { resetPrepare: { ok: true, ifEmpty: false } } }).ok, true);
+});
+
+test('resetPlan proceeds on an empty database', () => {
+  assert.equal(call('resetPlan', { items: [{}], refs: { resetPrepare: { ok: true, ifEmpty: true } } }).ok, true);
+});
+
+test('resetSeed returns one item per seed entry with isSample true', () => {
+  const out = lib.run('resetSeed', { json: {}, items: [{ deletedCount: 3 }], ref: () => ({}), config: { ...OFF, seed: SEED } });
+  assert.equal(out.length, 2);
+  for (const { json } of out) {
+    assert.equal(json.isSample, true);
+    assert.equal(json.ownerId, null);
+    assert.equal(json.deletedAt, null);
+    assert.equal(typeof json.createdAt, 'string');
+  }
+});
+
+test('resetSeed fails loudly without seed', () => {
+  assert.throws(() => lib.run('resetSeed', { json: {}, items: [{}], ref: () => ({}), config: OFF }), /Seed vuoto/);
+});
+
+test('resetResult counts the inserted notes', () => {
+  const r = call('resetResult', { items: [{ id: HEX }, { id: HEX }] });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.payload, { success: true, message: 'Demo ripristinata', entries: 2 });
+});
+
 test('exportMarkdownResult returns markdown text', () => {
   const r = call('exportMarkdownResult', { items: [{ _id: HEX, title: 'T', type: 'note', tags: [], content: 'C' }] });
   assert.equal(r.status, 200);

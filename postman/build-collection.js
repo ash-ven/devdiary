@@ -33,8 +33,26 @@ const noOwnerId = [
   "if (ct.includes('json')) pm.test('nessun ownerId nella risposta', () => pm.expect(pm.response.text()).to.not.include('ownerId'));",
 ];
 
+const seedCount = require('../api/seed/entries.json').length;
+const resetHeader = [{ key: 'X-Reset-Token', value: '{{resetToken}}' }];
+
 const contratto = [
   request('GET status', 'GET', '{{baseUrl}}/status', { tests: [status(200), T('stato e database OK', "pm.expect(pm.response.json()).to.eql({ status: 'OK', database: 'OK' });")] }),
+  request('POST reset senza token', 'POST', '{{baseUrl}}/demo/reset', { tests: [status(401), ...errorIs('RESET_UNAUTHORIZED')] }),
+  request('POST reset con token sbagliato', 'POST', '{{baseUrl}}/demo/reset', {
+    headers: [{ key: 'X-Reset-Token', value: 'sbagliato' }], tests: [status(401), ...errorIs('RESET_UNAUTHORIZED')],
+  }),
+  request('POST reset', 'POST', '{{baseUrl}}/demo/reset', {
+    headers: resetHeader,
+    tests: [status(200), messageIs('Demo ripristinata'),
+      T('tutte le note di esempio inserite', "pm.expect(pm.response.json().entries).to.eql(Number(pm.collectionVariables.get('seedCount')));")],
+  }),
+  request('POST reset se vuoto su database pieno', 'POST', '{{baseUrl}}/demo/reset?ifEmpty=true', {
+    headers: resetHeader, tests: [status(200), messageIs('Demo già pronta')],
+  }),
+  request('GET lista dopo il reset', 'GET', '{{baseUrl}}/diary?search=Appunti%20Flutter', {
+    tests: [status(200), T('contiene "Appunti Flutter" di esempio', "const n = pm.response.json().find(e => e.title === 'Appunti Flutter'); pm.expect(n).to.be.an('object'); pm.expect(n.isSample).to.eql(true);")],
+  }),
   request('POST crea nota', 'POST', '{{baseUrl}}/diary', {
     pre: ["pm.collectionVariables.set('runTag', 'newman' + Date.now());"],
     body: { title: 'Nota {{runTag}}', content: 'Creata dai test di contratto', type: 'note', tags: 'newman, test' },
@@ -109,6 +127,7 @@ const collection = {
     schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
   },
   event: [{ listen: 'test', script: { type: 'text/javascript', exec: noOwnerId } }],
+  variable: [{ key: 'seedCount', value: String(seedCount) }],
   item: [
     { name: 'Contratto', item: contratto },
     { name: 'Demo', item: demo },

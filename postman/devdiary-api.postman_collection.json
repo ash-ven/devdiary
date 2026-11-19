@@ -16,6 +16,12 @@
       }
     }
   ],
+  "variable": [
+    {
+      "key": "seedCount",
+      "value": "21"
+    }
+  ],
   "item": [
     {
       "name": "Contratto",
@@ -38,6 +44,124 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/status"
+          }
+        },
+        {
+          "name": "POST reset senza token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice RESET_UNAUTHORIZED\", () => { pm.expect(pm.response.json().code).to.eql(\"RESET_UNAUTHORIZED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/demo/reset"
+          }
+        },
+        {
+          "name": "POST reset con token sbagliato",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice RESET_UNAUTHORIZED\", () => { pm.expect(pm.response.json().code).to.eql(\"RESET_UNAUTHORIZED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Reset-Token",
+                "value": "sbagliato"
+              }
+            ],
+            "url": "{{baseUrl}}/demo/reset"
+          }
+        },
+        {
+          "name": "POST reset",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Demo ripristinata\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Demo ripristinata\"); });",
+                  "pm.test(\"tutte le note di esempio inserite\", () => { pm.expect(pm.response.json().entries).to.eql(Number(pm.collectionVariables.get('seedCount'))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Reset-Token",
+                "value": "{{resetToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/demo/reset"
+          }
+        },
+        {
+          "name": "POST reset se vuoto su database pieno",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Demo già pronta\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Demo già pronta\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Reset-Token",
+                "value": "{{resetToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/demo/reset?ifEmpty=true"
+          }
+        },
+        {
+          "name": "GET lista dopo il reset",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene \\\"Appunti Flutter\\\" di esempio\", () => { const n = pm.response.json().find(e => e.title === 'Appunti Flutter'); pm.expect(n).to.be.an('object'); pm.expect(n.isSample).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary?search=Appunti%20Flutter"
           }
         },
         {

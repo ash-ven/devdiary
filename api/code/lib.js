@@ -352,6 +352,29 @@ const ENTRY = {
     if (dbError(items)) return { ...fail(503, 'DATABASE_UNAVAILABLE'), contentType: 'application/json; charset=utf-8' };
     return done(200, buildMarkdown(found(items)), { contentType: 'text/markdown; charset=utf-8' });
   },
+
+  // Reset della demo: chiamato dal cron di GitHub Actions e, con ifEmpty, all'avvio del container.
+  resetPrepare({ json, config }) {
+    const token = String((json.headers || {})['x-reset-token'] ?? '');
+    if (!config.resetToken || token !== config.resetToken) return fail(401, 'RESET_UNAUTHORIZED');
+    return done(200, null, { ifEmpty: isTrue((json.query || {}).ifEmpty) });
+  },
+  resetPlan({ items, ref }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    const count = ((items || [])[0] || {}).n || 0;
+    // ok = prosegui verso la cancellazione; con ifEmpty e dati presenti si risponde subito.
+    if (ref('resetPrepare').ifEmpty && count > 0) return { ok: false, status: 200, payload: { success: true, message: 'Demo già pronta', entries: count } };
+    return done(200, null, { count });
+  },
+  resetSeed({ config }) {
+    const docs = seedToDocs(config.seed, new Date());
+    if (!docs.length) throw new Error('Seed vuoto: manca api/seed/entries.json nel build');
+    return docs;
+  },
+  resetResult({ items }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    return done(200, { success: true, message: 'Demo ripristinata', entries: (items || []).filter((i) => i && i.id).length });
+  },
 };
 
 // Dispatcher usato da ogni nodo Code: restituisce gli elementi n8n in uscita.

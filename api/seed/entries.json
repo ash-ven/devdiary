@@ -1,0 +1,233 @@
+[
+  {
+    "title": "n8n restituisce _id come {buffer}",
+    "content": "## Problema\nDettaglio, modifica ed eliminazione delle note fallivano: l'app riceveva `_id` come oggetto `{ buffer: {…} }` invece che come stringa, e la chiamata al dettaglio finiva in 404.\n\n## Causa\nIl nodo MongoDB di n8n lascia l'ObjectId nel JSON. L'espressione della risposta lo copia campo per campo e perde la conversione in stringa.\n\n## Soluzione\nNella risposta del webhook converto `_id` in esadecimale prima di inviarlo, qualunque forma abbia.",
+    "type": "errore",
+    "language": "javascript",
+    "code": "const toHex = (id) =>\n  typeof id === 'string' ? id\n  : id?.toHexString?.() ??\n    Object.values(id.buffer)\n      .map(b => b.toString(16).padStart(2, '0'))\n      .join('');",
+    "tags": ["n8n", "mongodb", "objectid"],
+    "isFavorite": true,
+    "daysAgo": 0,
+    "time": "09:34"
+  },
+  {
+    "title": "getEntries con filtro per tipo",
+    "content": "Il service centralizza tutte le chiamate a n8n. I filtri viaggiano come query parameter, mai nel path: `/diary?type=snippet&favorite=true`.",
+    "type": "snippet",
+    "language": "dart",
+    "code": "Future<List<DiaryEntry>> getEntries({String? type}) async {\n  final uri = Uri.parse('$baseUrl/diary').replace(\n    queryParameters: {if (type != null) 'type': type},\n  );\n  final res = await http.get(uri);\n  if (res.statusCode != 200) throw ApiException(res);\n  return (jsonDecode(res.body) as List)\n      .map((e) => DiaryEntry.fromJson(e))\n      .toList();\n}",
+    "tags": ["dart", "flutter", "http"],
+    "isFavorite": false,
+    "daysAgo": 0,
+    "time": "10:12"
+  },
+  {
+    "title": "Flutter web senza Modalità sviluppatore",
+    "content": "Su Windows `flutter build web` crea i symlink dei plugin anche per le piattaforme native e si ferma se la Modalità sviluppatore è spenta.\n\nUn progetto solo web, senza le cartelle `android`, `ios`, `windows`, `linux` e `macos`, compila senza toccare le impostazioni di sistema.",
+    "type": "note",
+    "language": null,
+    "code": null,
+    "tags": ["flutter", "windows"],
+    "isFavorite": false,
+    "daysAgo": 0,
+    "time": "08:58"
+  },
+  {
+    "title": "Mostrare le chiamate API dentro l'app",
+    "content": "Chi prova la demo vede l'interfaccia ma non il backend. Un pannello in basso potrebbe elencare ogni richiesta: metodo, endpoint, codice di risposta e tempo.\n\nCosì anche chi non apre il codice capisce che dietro c'è un'API vera, con validazione ed errori gestiti.",
+    "type": "idea",
+    "language": null,
+    "code": null,
+    "tags": ["ux", "api", "portfolio"],
+    "isFavorite": true,
+    "daysAgo": 1,
+    "time": "18:20"
+  },
+  {
+    "title": "Documentazione del package http",
+    "content": "Riferimento per le richieste HTTP da Flutter: [pub.dev/packages/http](https://pub.dev/packages/http).\n\nUtile la sezione sui client riutilizzabili e sui timeout.",
+    "type": "link",
+    "language": null,
+    "code": null,
+    "tags": ["flutter", "http", "docs"],
+    "isFavorite": false,
+    "daysAgo": 1,
+    "time": "11:05"
+  },
+  {
+    "title": "Test di contratto con Newman",
+    "content": "La collection Postman non è solo per provare a mano: con Newman gira da riga di comando e in CI.\n\nOgni richiesta controlla codice di risposta, forma del JSON e messaggi di errore. Due ambienti: contratto della traccia e demo.",
+    "type": "note",
+    "language": null,
+    "code": null,
+    "tags": ["postman", "test", "ci"],
+    "isFavorite": false,
+    "daysAgo": 2,
+    "time": "16:40"
+  },
+  {
+    "title": "Tema scuro Blueprint",
+    "content": "Il tema scuro non deve essere il chiaro invertito: ogni colore ha la sua versione verificata.\n\nIdea: carta a quadretti di giorno, cianografia blu di notte, con gli stessi segni del quaderno.",
+    "type": "idea",
+    "language": null,
+    "code": null,
+    "tags": ["ux", "design"],
+    "isFavorite": false,
+    "daysAgo": 3,
+    "time": "21:15"
+  },
+  {
+    "title": "Rapporto di contrasto WCAG",
+    "content": "Formula delle WCAG per il contrasto fra due colori: luminanza relativa di ciascuno, poi (chiaro + 0,05) / (scuro + 0,05). Il testo normale richiede almeno 4,5:1.",
+    "type": "snippet",
+    "language": "javascript",
+    "code": "function luminance(hex) {\n  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)\n    .map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));\n  return 0.2126 * r + 0.7152 * g + 0.0722 * b;\n}\n\nfunction contrast(a, b) {\n  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);\n  return (hi + 0.05) / (lo + 0.05);\n}",
+    "tags": ["accessibilita", "javascript"],
+    "isFavorite": true,
+    "daysAgo": 5,
+    "time": "12:30"
+  },
+  {
+    "title": "Date sfasate di un'ora",
+    "content": "## Problema\nLe note create alle 9 risultavano create alle 8.\n\n## Causa\nIl server salva le date in UTC; l'app le mostrava senza convertirle nel fuso di Roma, che d'inverno è UTC+1 e d'estate UTC+2.\n\n## Soluzione\nSalvare sempre in ISO UTC e convertire solo nella visualizzazione, con il fuso Europe/Rome.",
+    "type": "errore",
+    "language": null,
+    "code": null,
+    "tags": ["date", "timezone"],
+    "isFavorite": false,
+    "daysAgo": 12,
+    "time": "09:05"
+  },
+  {
+    "title": "Docker Compose per MongoDB e n8n",
+    "content": "Un solo comando per avere database e API in locale, con la stessa immagine usata in produzione.",
+    "type": "snippet",
+    "language": "yaml",
+    "code": "services:\n  mongo:\n    image: mongo:6.0\n  api:\n    build: .\n    ports:\n      - \"5678:10000\"\n    environment:\n      MONGODB_URI: mongodb://mongo:27017\n      MONGODB_DATABASE: dev_diary",
+    "tags": ["docker", "mongodb", "n8n"],
+    "isFavorite": false,
+    "daysAgo": 30,
+    "time": "17:45"
+  },
+  {
+    "title": "CORS bloccato tra Flutter web e n8n",
+    "content": "## Problema\nDa Chrome le chiamate al webhook fallivano con un errore CORS, mentre in Postman funzionavano.\n\n## Causa\nIl browser invia una richiesta preliminare OPTIONS e accetta la risposta solo se l'origine dell'app è consentita.\n\n## Soluzione\nNel nodo Webhook di n8n impostare l'opzione \"Allowed Origins\" con l'indirizzo dell'app.",
+    "type": "errore",
+    "language": null,
+    "code": null,
+    "tags": ["cors", "n8n", "flutter"],
+    "isFavorite": false,
+    "daysAgo": 40,
+    "time": "15:20"
+  },
+  {
+    "title": "Documentazione Flutter: navigazione",
+    "content": "Guida ufficiale a navigazione e routing: [docs.flutter.dev/ui/navigation](https://docs.flutter.dev/ui/navigation).",
+    "type": "link",
+    "language": null,
+    "code": null,
+    "tags": ["flutter", "docs"],
+    "isFavorite": false,
+    "daysAgo": 60,
+    "time": "10:00"
+  },
+  {
+    "title": "MongoDB: operatori di query",
+    "content": "Elenco completo degli operatori (`$or`, `$regex`, `$ne`, `$in`…): [mongodb.com/docs/manual/reference/operator/query](https://www.mongodb.com/docs/manual/reference/operator/query/).",
+    "type": "link",
+    "language": null,
+    "code": null,
+    "tags": ["mongodb", "docs"],
+    "isFavorite": false,
+    "daysAgo": 70,
+    "time": "14:10"
+  },
+  {
+    "title": "Esportare il diario in Markdown",
+    "content": "Un export in Markdown rende il diario leggibile ovunque, anche fuori dall'app: titolo, tipo, tag, testo e blocchi di codice con il linguaggio.",
+    "type": "idea",
+    "language": null,
+    "code": null,
+    "tags": ["export", "markdown"],
+    "isFavorite": false,
+    "daysAgo": 80,
+    "time": "19:30"
+  },
+  {
+    "title": "Ricerca per tag",
+    "content": "Aggiungere una sezione con i tag più usati, da cui filtrare il diario con un clic.",
+    "type": "idea",
+    "language": null,
+    "code": null,
+    "tags": ["tag", "ricerca"],
+    "isFavorite": false,
+    "daysAgo": 95,
+    "time": "22:59"
+  },
+  {
+    "title": "Workflow non risponde perché non pubblicato",
+    "content": "## Problema\nPostman riceveva 404 sulla Production URL, mentre la Test URL funzionava.\n\n## Causa\nLa Production URL esiste solo per i workflow attivi.\n\n## Soluzione\nSalvare e attivare il workflow prima di usare la Production URL.",
+    "type": "errore",
+    "language": null,
+    "code": null,
+    "tags": ["n8n", "webhook"],
+    "isFavorite": true,
+    "daysAgo": 97,
+    "time": "22:58"
+  },
+  {
+    "title": "Query MongoDB per tipo",
+    "content": "Le note di un tipo, dalla più recente.",
+    "type": "snippet",
+    "language": "javascript",
+    "code": "db.entries\n  .find({ type: 'snippet' })\n  .sort({ createdAt: -1 })",
+    "tags": ["mongodb", "query"],
+    "isFavorite": false,
+    "daysAgo": 97,
+    "time": "22:58"
+  },
+  {
+    "title": "Appunti Flutter",
+    "content": "Ripasso di Flutter e delle chiamate HTTP verso le API: `FutureBuilder` per il caricamento, stato di errore con il pulsante Riprova.",
+    "type": "note",
+    "language": null,
+    "code": null,
+    "tags": ["flutter", "http"],
+    "isFavorite": true,
+    "daysAgo": 97,
+    "time": "22:57"
+  },
+  {
+    "title": "Normalizzare i tag in un nodo Code",
+    "content": "I tag arrivano come array o come stringa separata da virgole: li porto sempre a un array in minuscolo, senza spazi e senza duplicati.",
+    "type": "snippet",
+    "language": "javascript",
+    "code": "let tags = body.tags ?? [];\nif (typeof tags === 'string') tags = tags.split(',');\ntags = [...new Set(tags\n  .map(tag => String(tag).trim().toLowerCase())\n  .filter(tag => tag.length > 0))];",
+    "tags": ["n8n", "javascript"],
+    "isFavorite": false,
+    "daysAgo": 110,
+    "time": "11:25"
+  },
+  {
+    "title": "Differenza tra GET e POST",
+    "content": "GET legge e non ha corpo: i filtri vanno nella query string. POST crea una risorsa e manda i dati nel corpo JSON. Una GET si può ripetere senza effetti, una POST no.",
+    "type": "note",
+    "language": null,
+    "code": null,
+    "tags": ["http", "api"],
+    "isFavorite": false,
+    "daysAgo": 120,
+    "time": "10:15"
+  },
+  {
+    "title": "Perché Flutter non parla con MongoDB",
+    "content": "L'app chiama sempre n8n, mai il database: le credenziali restano sul server, la validazione sta in un solo posto e si può cambiare database senza toccare l'interfaccia.",
+    "type": "note",
+    "language": null,
+    "code": null,
+    "tags": ["architettura", "api"],
+    "isFavorite": false,
+    "daysAgo": 125,
+    "time": "09:40"
+  }
+]
