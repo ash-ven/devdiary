@@ -66,11 +66,17 @@ const contratto = [
       listHas('noteId', true)],
   }),
   request('GET dettaglio', 'GET', '{{baseUrl}}/diary/detail?id={{noteId}}', {
-    tests: [status(200), T('e la nota richiesta', "pm.expect(pm.response.json()._id).to.eql(pm.collectionVariables.get('noteId'));")],
+    tests: [status(200), T('e la nota richiesta', "pm.expect(pm.response.json()._id).to.eql(pm.collectionVariables.get('noteId'));"),
+      "pm.collectionVariables.set('noteCreatedAt', pm.response.json().createdAt);"],
   }),
   request('PUT modifica', 'PUT', '{{baseUrl}}/diary?id={{noteId}}', {
     body: { title: 'Nota {{runTag}} modificata', content: 'Contenuto aggiornato', type: 'idea', tags: ['newman'], isFavorite: true },
     tests: [status(200), messageIs('Nota aggiornata correttamente')],
+  }),
+  request('GET dettaglio dopo la modifica', 'GET', '{{baseUrl}}/diary/detail?id={{noteId}}', {
+    tests: [status(200),
+      T('modifica salvata', "const n = pm.response.json(); pm.expect(n.title).to.eql('Nota ' + pm.collectionVariables.get('runTag') + ' modificata'); pm.expect(n.type).to.eql('idea'); pm.expect(n.isFavorite).to.eql(true); pm.expect(n.tags).to.eql(['newman']);"),
+      T('createdAt invariato, updatedAt aggiornato', "const n = pm.response.json(); pm.expect(n.createdAt).to.eql(pm.collectionVariables.get('noteCreatedAt')); pm.expect(n.updatedAt).to.not.eql(n.createdAt);")],
   }),
   request('POST Unicode', 'POST', '{{baseUrl}}/diary', {
     body: { title: 'perché più ✓ {{runTag}}', content: 'Accenti, emoji ✓ e virgolette “tipografiche”', type: 'note' },
@@ -80,11 +86,25 @@ const contratto = [
     tests: [status(200), T('titolo identico', "pm.expect(pm.response.json().title).to.eql('perché più ✓ ' + pm.collectionVariables.get('runTag'));"),
       T('contenuto identico', "pm.expect(pm.response.json().content).to.eql('Accenti, emoji ✓ e virgolette “tipografiche”');")],
   }),
-  request('GET ricerca con caratteri speciali', 'GET', '{{baseUrl}}/diary?search=c%2B%2B%20(', {
-    tests: [status(200), T('array', "pm.expect(pm.response.json()).to.be.an('array');")],
+  request('POST nota con caratteri speciali', 'POST', '{{baseUrl}}/diary', {
+    body: { title: 'c++ ([a- {{runTag}}', content: 'Titolo con caratteri speciali delle espressioni regolari', type: 'note' },
+    tests: [status(201), "pm.collectionVariables.set('specialId', pm.response.json()._id);"],
   }),
+  request('GET ricerca con caratteri speciali', 'GET', '{{baseUrl}}/diary?search=c%2B%2B%20(%5Ba-', {
+    tests: [status(200), listHas('specialId', true),
+      T('ricerca letterale', "pm.response.json().forEach(e => pm.expect((e.title + ' ' + e.content).toLowerCase()).to.include('c++ ([a-'));")],
+  }),
+  request('DELETE pulizia nota con caratteri speciali', 'DELETE', '{{baseUrl}}/diary?id={{specialId}}', { tests: [status(200)] }),
   request('POST corpo array', 'POST', '{{baseUrl}}/diary', { rawBody: '[]', tests: [status(400), ...errorIs('BODY_INVALID')] }),
   request('POST corpo stringa', 'POST', '{{baseUrl}}/diary', { rawBody: '"x"', tests: [status(400), ...errorIs('BODY_INVALID')] }),
+  request('POST corpo null', 'POST', '{{baseUrl}}/diary', { rawBody: 'null', tests: [status(400), ...errorIs('BODY_INVALID')] }),
+  request('POST JSON rotto', 'POST', '{{baseUrl}}/diary', { rawBody: '{broken', tests: [status(400), ...errorIs('BODY_INVALID')] }),
+  request('PUT JSON rotto', 'PUT', '{{baseUrl}}/diary?id={{noteId}}', { rawBody: '{broken', tests: [status(400), ...errorIs('BODY_INVALID')] }),
+  request('PUT corpo null', 'PUT', '{{baseUrl}}/diary?id={{noteId}}', { rawBody: 'null', tests: [status(400), ...errorIs('BODY_INVALID')] }),
+  request('PUT corpo array', 'PUT', '{{baseUrl}}/diary?id={{noteId}}', { rawBody: '[]', tests: [status(400), ...errorIs('BODY_INVALID')] }),
+  request('POST campo non testuale', 'POST', '{{baseUrl}}/diary', {
+    rawBody: '{"title":{"a":1},"content":"x","type":"note"}', tests: [status(400), ...errorIs('FIELD_INVALID')],
+  }),
   request('POST titolo troppo lungo', 'POST', '{{baseUrl}}/diary', {
     pre: ["pm.variables.set('longTitle', 'a'.repeat(121));"],
     body: { title: '{{longTitle}}', content: 'x', type: 'note' },
@@ -151,7 +171,6 @@ const demo = [
   request('GET dettaglio di A visto da B', 'GET', '{{baseUrl}}/diary/detail?id={{noteA}}', { headers: as('visitorB'), tests: [status(404), ...errorIs('NOT_FOUND')] }),
   request('PUT nota di A da B', 'PUT', '{{baseUrl}}/diary?id={{noteA}}', { headers: as('visitorB'), body: sampleBody, tests: [status(404), ...errorIs('NOT_FOUND')] }),
   request('DELETE nota di A da B', 'DELETE', '{{baseUrl}}/diary?id={{noteA}}', { headers: as('visitorB'), tests: [status(404), ...errorIs('NOT_FOUND')] }),
-  request('POST ripristina nota di A da B', 'POST', '{{baseUrl}}/diary/restore?id={{noteA}}', { headers: as('visitorB'), tests: [status(404)] }),
   request('GET export json di B', 'GET', '{{baseUrl}}/diary/export/json', { headers: as('visitorB'), tests: [status(200), listHas('noteA', false)] }),
   request('GET export json di A', 'GET', '{{baseUrl}}/diary/export/json', { headers: as('visitorA'), tests: [status(200), listHas('noteA', true)] }),
   request('GET export markdown di B', 'GET', '{{baseUrl}}/diary/export/markdown', {
@@ -164,6 +183,11 @@ const demo = [
   request('DELETE nota di A nel cestino', 'DELETE', '{{baseUrl}}/diary?id={{noteA}}', { headers: as('visitorA'), tests: [status(200), messageIs('Nota spostata nel cestino')] }),
   request('GET cestino di A', 'GET', '{{baseUrl}}/diary?trash=true', { headers: as('visitorA'), tests: [status(200), listHas('noteA', true)] }),
   request('GET cestino di B', 'GET', '{{baseUrl}}/diary?trash=true', { headers: as('visitorB'), tests: [status(200), listHas('noteA', false)] }),
+  // Con la nota di A nel cestino, il 404 per B dipende solo dall'isolamento fra visitatori.
+  request('GET dettaglio cestino di A visto da B', 'GET', '{{baseUrl}}/diary/detail?id={{noteA}}&trash=true', { headers: as('visitorB'), tests: [status(404), ...errorIs('NOT_FOUND')] }),
+  request('POST ripristina nota di A da B', 'POST', '{{baseUrl}}/diary/restore?id={{noteA}}', { headers: as('visitorB'), tests: [status(404), ...errorIs('NOT_FOUND')] }),
+  request('DELETE definitivo nota di A da B', 'DELETE', '{{baseUrl}}/diary?id={{noteA}}&permanent=true', { headers: as('visitorB'), tests: [status(404), ...errorIs('NOT_FOUND')] }),
+  request('GET cestino di A dopo i tentativi di B', 'GET', '{{baseUrl}}/diary?trash=true', { headers: as('visitorA'), tests: [status(200), listHas('noteA', true)] }),
   request('POST ripristina nota di A', 'POST', '{{baseUrl}}/diary/restore?id={{noteA}}', { headers: as('visitorA'), tests: [status(200), messageIs('Nota ripristinata')] }),
   request('GET lista di A dopo il ripristino', 'GET', '{{baseUrl}}/diary', { headers: as('visitorA'), tests: [status(200), listHas('noteA', true)] }),
   request(LIMIT, 'POST', '{{baseUrl}}/diary', {

@@ -26,6 +26,8 @@ const MESSAGES = {
   NOT_IN_TRASH: 'La nota non è nel cestino',
   DEMO_LIMIT_REACHED: 'Hai raggiunto il limite della demo: le note si cancellano ogni notte',
   DATABASE_UNAVAILABLE: 'Database non disponibile',
+  FIELD_INVALID: 'Formato non valido: titolo, contenuto, tipo, linguaggio, codice e tag devono essere testo',
+  INTERNAL_ERROR: 'Errore interno del server',
 };
 
 // ---------- risposte ----------
@@ -68,30 +70,38 @@ function toPublic(doc) {
 
 const length = (text) => [...text].length;
 
+// Solo testo (o numeri, convertiti): oggetti e array non diventano "[object Object]".
+const isText = (value) => typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value));
+const asText = (value) => (value === null || value === undefined ? '' : String(value));
+
 function normalizeEntryInput(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return fail(400, 'BODY_INVALID');
+  for (const field of ['title', 'content', 'type', 'language', 'code']) {
+    const value = body[field];
+    if (value !== null && value !== undefined && !isText(value)) return fail(400, 'FIELD_INVALID');
+  }
 
-  const title = String(body.title ?? '').trim();
-  const content = String(body.content ?? '').trim();
+  const title = asText(body.title).trim();
+  const content = asText(body.content).trim();
   if (!title) return fail(400, 'TITLE_REQUIRED');
   if (!content) return fail(400, 'CONTENT_REQUIRED');
   if (length(title) > LIMITS.title) return fail(400, 'TITLE_TOO_LONG');
   if (length(content) > LIMITS.content) return fail(400, 'CONTENT_TOO_LONG');
 
-  let type = String(body.type ?? '').trim().toLowerCase();
+  let type = asText(body.type).trim().toLowerCase();
   if (!type) type = 'note';
   if (!TYPES.includes(type)) return fail(400, 'TYPE_INVALID');
 
-  const language = String(body.language ?? '').trim().toLowerCase() || null;
+  const language = asText(body.language).trim().toLowerCase() || null;
 
   // Il codice resta com'è: l'indentazione conta. Solo spazi vuoti → null.
-  const rawCode = body.code === null || body.code === undefined ? '' : String(body.code);
+  const rawCode = asText(body.code);
   const code = rawCode.trim() ? rawCode : null;
   if (code && length(code) > LIMITS.code) return fail(400, 'CODE_TOO_LONG');
 
   let rawTags = body.tags ?? [];
   if (typeof rawTags === 'string') rawTags = rawTags.split(',');
-  if (!Array.isArray(rawTags)) rawTags = [];
+  if (!Array.isArray(rawTags) || !rawTags.every(isText)) return fail(400, 'FIELD_INVALID');
   const tags = [];
   for (const tag of rawTags) {
     const t = String(tag).trim().toLowerCase();
@@ -368,7 +378,8 @@ const ENTRY = {
   },
   resetSeed({ config }) {
     const docs = seedToDocs(config.seed, new Date());
-    if (!docs.length) throw new Error('Seed vuoto: manca api/seed/entries.json nel build');
+    // Un IF dopo questo nodo manda gli elementi con ok === false alla risposta, non all'insert.
+    if (!docs.length) return fail(500, 'INTERNAL_ERROR', 'Seed vuoto: manca api/seed/entries.json nel build');
     return docs;
   },
   resetResult({ items }) {
@@ -381,7 +392,13 @@ const ENTRY = {
 function run(name, ctx) {
   const fn = ENTRY[name];
   if (!fn) throw new Error(`Funzione di ingresso sconosciuta: ${name}`);
-  const result = fn(ctx);
+  let result;
+  try {
+    result = fn(ctx);
+  } catch (err) {
+    // Un'eccezione non deve mai diventare un 200 vuoto: risponde il nodo Respond con un 500.
+    result = fail(500, 'INTERNAL_ERROR');
+  }
   return (Array.isArray(result) ? result : [result]).map((json) => ({ json }));
 }
 

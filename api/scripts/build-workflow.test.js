@@ -56,6 +56,16 @@ for (const { file, template } of templates) {
   });
 }
 
+test('resetSeed output is checked before inserting', () => {
+  const reset = templates.find((t) => t.file === 'devdiary-reset.template.json').template;
+  const byName = Object.fromEntries(reset.nodes.map((n) => [n.name, n]));
+  const next = reset.connections.resetSeed.main[0].map((c) => c.node);
+  assert.equal(next.length, 1);
+  assert.equal(byName[next[0]].type, 'n8n-nodes-base.if', 'dopo resetSeed serve un IF');
+  const branches = reset.connections[next[0]].main.map((b) => b.map((c) => c.node));
+  assert.deepEqual(branches.flat().sort(), ['Insert sample notes', 'Respond reset']);
+});
+
 test('the main workflow keeps the course webhook paths', () => {
   const main = templates.find((t) => t.file === 'devdiary-api.template.json').template;
   const hooks = main.nodes.filter((n) => n.type === 'n8n-nodes-base.webhook').map((n) => `${n.parameters.httpMethod || 'GET'} ${n.parameters.path}`).sort();

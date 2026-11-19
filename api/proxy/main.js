@@ -12,7 +12,15 @@ n8n.on('exit', (code, signal) => {
 });
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => n8n.kill(sig));
 
-const proxy = createProxy({ target: N8N, rateLimit: Number(process.env.RATE_LIMIT_PER_MINUTE || 60) });
+// Ultima rete di sicurezza: un errore inatteso si registra, ma non deve spegnere l'API pubblica.
+process.on('uncaughtException', (err) => console.error('DevDiary API: eccezione non gestita', err));
+
+const proxy = createProxy({
+  target: N8N,
+  rateLimit: Number(process.env.RATE_LIMIT_PER_MINUTE || 60),
+  allowedOrigins: process.env.ALLOWED_ORIGINS || '*',
+  trustedHops: Number(process.env.TRUSTED_PROXY_HOPS ?? 1),
+});
 proxy.listen(port, '0.0.0.0', () => console.log(`DevDiary API: proxy in ascolto sulla porta ${port}`));
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

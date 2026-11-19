@@ -181,7 +181,7 @@
     {
       "id": "1f88e14e-d576-4621-aedf-44916c5f5e3e",
       "position": [
-        1920,
+        2160,
         0
       ],
       "name": "Insert sample notes",
@@ -205,7 +205,7 @@
     {
       "id": "5d30fe2f-ac00-48cc-9e54-19522180535c",
       "position": [
-        2160,
+        2400,
         0
       ],
       "name": "resetResult",
@@ -218,7 +218,7 @@
     {
       "id": "8e545fce-c585-481f-9969-295bfe3bc7f0",
       "position": [
-        2400,
+        2640,
         0
       ],
       "name": "Respond reset",
@@ -230,6 +230,39 @@
         "options": {
           "responseCode": "={{ $json.status }}"
         }
+      }
+    },
+    {
+      "id": "ce460778-2222-48a7-9003-084eaeaaa724",
+      "name": "Seed ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1920,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "629f52d9-ea37-40c1-b757-b1401dc0a785",
+              "leftValue": "={{ String($json.ok) }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       }
     }
   ],
@@ -329,7 +362,7 @@
       "main": [
         [
           {
-            "node": "Insert sample notes",
+            "node": "Seed ok?",
             "type": "main",
             "index": 0
           }
@@ -352,6 +385,24 @@
         [
           {
             "node": "Respond reset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seed ok?": {
+      "main": [
+        [
+          {
+            "node": "Respond reset",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert sample notes",
             "type": "main",
             "index": 0
           }

@@ -338,8 +338,45 @@ test('resetSeed returns one item per seed entry with isSample true', () => {
   }
 });
 
-test('resetSeed fails loudly without seed', () => {
-  assert.throws(() => lib.run('resetSeed', { json: {}, items: [{}], ref: () => ({}), config: OFF }), /Seed vuoto/);
+test('resetSeed reports an empty seed as 500', () => {
+  const out = lib.run('resetSeed', { json: {}, items: [{}], ref: () => ({}), config: OFF });
+  assert.equal(out.length, 1);
+  assert.equal(out[0].json.ok, false);
+  assert.equal(out[0].json.status, 500);
+  assert.equal(out[0].json.payload.code, 'INTERNAL_ERROR');
+});
+
+test('run turns unexpected exceptions into 500', () => {
+  const out = lib.run('createPrepare', { json: null, items: [], ref: () => ({}), config: OFF });
+  assert.equal(out.length, 1);
+  assert.equal(out[0].json.ok, false);
+  assert.equal(out[0].json.status, 500);
+  assert.deepEqual(out[0].json.payload, { error: true, code: 'INTERNAL_ERROR', message: 'Errore interno del server' });
+});
+
+test('updatePrepare scopes the query to the demo visitor', () => {
+  const r = call('updatePrepare', { json: { query: { id: HEX }, body: { title: 'T', content: 'C' }, headers: { 'x-demo-visitor': UUID } }, config: DEMO });
+  assert.equal(r.filter._id, HEX);
+  assert.deepEqual(r.filter.$or, [{ isSample: true }, { ownerId: UUID }]);
+});
+
+test('updatePrepare requires a visitor in demo', () => {
+  assert.equal(code(call('updatePrepare', { json: { query: { id: HEX }, body: { title: 'T', content: 'C' }, headers: {} }, config: DEMO })), 'VISITOR_REQUIRED');
+});
+
+test('deletePrepare scopes the query to the demo visitor', () => {
+  const r = call('deletePrepare', { json: { query: { id: HEX, permanent: 'true' }, headers: { 'x-demo-visitor': UUID } }, config: DEMO });
+  assert.equal(r.filter._id, HEX);
+  assert.deepEqual(r.filter.$or, [{ isSample: true }, { ownerId: UUID }]);
+  assert.equal(code(call('deletePrepare', { json: { query: { id: HEX }, headers: {} }, config: DEMO })), 'VISITOR_REQUIRED');
+});
+
+test('restorePrepare scopes the query to the demo visitor', () => {
+  const r = call('restorePrepare', { json: { query: { id: HEX }, headers: { 'x-demo-visitor': UUID } }, config: DEMO });
+  assert.equal(r.filter._id, HEX);
+  assert.deepEqual(r.filter.deletedAt, { $ne: null });
+  assert.deepEqual(r.filter.$or, [{ isSample: true }, { ownerId: UUID }]);
+  assert.equal(code(call('restorePrepare', { json: { query: { id: HEX }, headers: {} }, config: DEMO })), 'VISITOR_REQUIRED');
 });
 
 test('resetResult counts the inserted notes', () => {

@@ -32,7 +32,7 @@ services:
       MONGODB_DATABASE: dev_diary
       DEMO_MODE: "false"
       ALLOWED_ORIGINS: "*"
-      RESET_TOKEN: dev-reset-token
+      RESET_TOKEN: dev-reset-token-for-local-tests-only
       N8N_ENCRYPTION_KEY: dev-encryption-key-not-secret
       RATE_LIMIT_PER_MINUTE: "1000"
 
@@ -45,7 +45,7 @@ services:
       MONGODB_DATABASE: dev_diary_demo
       DEMO_MODE: "true"
       ALLOWED_ORIGINS: "*"
-      RESET_TOKEN: dev-reset-token
+      RESET_TOKEN: dev-reset-token-for-local-tests-only
       N8N_ENCRYPTION_KEY: dev-encryption-key-not-secret
       RATE_LIMIT_PER_MINUTE: "1000"
 

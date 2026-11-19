@@ -83,6 +83,20 @@ test('normalizeEntryInput normalizes optional fields', () => {
   assert.equal(lib.normalizeEntryInput(valid({ language: ' Dart ' })).value.language, 'dart');
 });
 
+test('normalizeEntryInput rejects non-text fields', () => {
+  const cases = [
+    { title: { toString: 1 } }, { title: { a: 1 } }, { content: ['a', 'b'] }, { type: {} },
+    { language: [] }, { code: {} }, { tags: [{}] }, { tags: [['a']] }, { tags: 5 }, { tags: { a: 1 } },
+  ];
+  for (const over of cases) assert.equal(codeOf(lib.normalizeEntryInput(valid(over))), 'FIELD_INVALID', JSON.stringify(over));
+});
+
+test('normalizeEntryInput accepts numbers as text', () => {
+  const v = lib.normalizeEntryInput(valid({ title: 2026, content: 42 })).value;
+  assert.equal(v.title, '2026');
+  assert.equal(v.content, '42');
+});
+
 test('normalizeEntryInput keeps code indentation', () => {
   const code = '  final x = 1;\n    return x;\n';
   assert.equal(lib.normalizeEntryInput(valid({ code })).value.code, code);
