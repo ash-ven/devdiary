@@ -3,6 +3,7 @@ import '../theme/devdiary_fonts.dart';
 
 import '../main.dart';
 import '../models/diary_entry.dart';
+import '../services/api_exception.dart';
 import '../services/diary_api_service.dart';
 import 'diary_form_screen.dart';
 
@@ -51,7 +52,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Impossibile caricare la nota';
+        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare la nota';
         _isLoading = false;
       });
 

@@ -11,6 +11,9 @@ services:
     dockerContext: ./api
     healthCheckPath: /healthz
     autoDeploy: true
+    buildFilter:
+      paths:
+        - api/**
     envVars:
       - key: MONGODB_URI
         sync: false
@@ -35,6 +38,10 @@ services:
     buildCommand: ./app/tool/build_web.sh
     staticPublishPath: ./app/build/web
     autoDeploy: true
+    # Il build installa Flutter e dura diversi minuti: si rifà solo quando cambia l'app.
+    buildFilter:
+      paths:
+        - app/**
     envVars:
       - key: API_BASE_URL
         sync: false

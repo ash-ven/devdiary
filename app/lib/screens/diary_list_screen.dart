@@ -5,6 +5,7 @@ import '../theme/devdiary_fonts.dart';
 
 import '../main.dart';
 import '../models/diary_entry.dart';
+import '../services/api_exception.dart';
 import '../services/diary_api_service.dart';
 import '../widgets/diary_entry_card.dart';
 import 'diary_form_screen.dart';
@@ -76,7 +77,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Impossibile caricare le note';
+        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare le note';
         _isLoading = false;
       });
 

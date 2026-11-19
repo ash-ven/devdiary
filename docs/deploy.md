@@ -35,10 +35,10 @@ Account, password, stringhe di connessione e segreti li inserisce solo la person
 2. **New → Blueprint** → collega il repository `ash-ven/devdiary` → Render legge `render.yaml` e propone i due servizi.
 3. Inserisci i valori richiesti:
    - `devdiary-api` → `MONGODB_URI`: la stringa del punto 1.6.
-   - `devdiary-api` → `ALLOWED_ORIGINS`: per ora `https://devdiary.onrender.com` (l'indirizzo del sito; se Render ne assegna uno diverso lo correggi al punto 5).
+   - `devdiary-api` → `ALLOWED_ORIGINS`: per ora `https://devdiary.onrender.com` (l'indirizzo del sito; se Render ne assegna uno diverso lo correggi al punto 5). Deve essere l'origine esatta: `https://`, nome, **senza** barra finale né percorso. Un valore diverso fa rifiutare l'avvio dell'API: il motivo compare nei *Logs* del servizio (`configurazione non valida`).
    - `devdiary` → `API_BASE_URL`: `https://devdiary-api.onrender.com/webhook` (se Render assegna un indirizzo diverso all'API, usa quello, sempre con `/webhook` in fondo).
 4. **Apply**. Il primo deploy dell'API dura qualche minuto; il sito installa Flutter durante il build e ne impiega circa 5–10.
-5. Controlla gli indirizzi reali dei due servizi. Se differiscono da quelli inseriti, aggiorna `ALLOWED_ORIGINS` (API) e `API_BASE_URL` (sito) e rilancia il deploy di entrambi (*Manual Deploy → Deploy latest commit*).
+5. Controlla gli indirizzi reali dei due servizi. Se differiscono da quelli inseriti, aggiorna `ALLOWED_ORIGINS` (API) e `API_BASE_URL` (sito) e rilancia il deploy di entrambi (*Manual Deploy → Deploy latest commit*). Aggiorna anche `baseUrl` in `postman/produzione.postman_environment.json`.
 6. Da `devdiary-api` → *Environment* copia il valore generato di `RESET_TOKEN` (serve al punto 3).
 
 Le 750 ore gratuite mensili sono condivise fra i servizi del workspace: Loadout, LENA e DevDiary devono potersi addormentare quando nessuno li usa.
@@ -51,6 +51,18 @@ Nel repository `ash-ven/devdiary` → *Settings* → *Secrets and variables* →
 - **Variable** `API_BASE_URL`: lo stesso indirizzo usato per il sito, con `/webhook`.
 
 Poi *Actions* → **Reset della demo** → *Run workflow*: deve finire in verde.
+
+GitHub sospende i workflow pianificati di un repository pubblico dopo 60 giorni senza commit. Se il reset notturno smette di partire, riattivalo da *Actions* → **Reset della demo** → *Enable workflow* (oppure basta un commit qualsiasi). Senza reset la demo si sporca e il cluster Atlas può essere messo in pausa per inattività.
+
+## Se qualcosa non va
+
+| Sintomo | Causa probabile | Cosa fare |
+|---|---|---|
+| Il sito mostra "Impossibile raggiungere il server" su ogni pagina | `ALLOWED_ORIGINS` dell'API non coincide con l'indirizzo del sito (CORS), oppure `API_BASE_URL` del sito è sbagliato | Confronta i due valori con gli indirizzi reali; dopo la modifica rilancia il deploy |
+| Il sito mostra "Il server non risponde: potrebbe essere in avvio" | Il servizio gratuito si stava risvegliando | Riprova dopo un minuto |
+| L'API non parte, nei Logs c'è `configurazione non valida` | `ALLOWED_ORIGINS`, `DEMO_MODE` o `RESET_TOKEN` con un formato non ammesso | Correggi la variabile indicata nel messaggio |
+| `GET /webhook/status` risponde `"database":"ERROR"` | Stringa Atlas sbagliata o accesso di rete non aperto | Controlla `MONGODB_URI` e *Network Access* `0.0.0.0/0` su Atlas |
+| Il reset da GitHub fallisce con 401 | `RESET_TOKEN` su GitHub diverso da quello di Render | Ricopia il valore da Render |
 
 ## 4. Verifiche
 

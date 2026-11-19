@@ -3,6 +3,7 @@ import '../theme/devdiary_fonts.dart';
 
 import '../main.dart';
 import '../models/diary_entry.dart';
+import '../services/api_exception.dart';
 import '../services/diary_api_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Impossibile caricare la dashboard';
+        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare la dashboard';
         _isLoading = false;
       });
     }
