@@ -58,6 +58,21 @@ class DiaryEntry {
     );
   }
 
+  DiaryEntry copyWith({bool? isFavorite}) => DiaryEntry(
+    id: id,
+    title: title,
+    content: content,
+    type: type,
+    language: language,
+    code: code,
+    tags: tags,
+    isFavorite: isFavorite ?? this.isFavorite,
+    isSample: isSample,
+    deletedAt: deletedAt,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+  );
+
   Map<String, dynamic> toJson() {
     return {
       'title': title,
