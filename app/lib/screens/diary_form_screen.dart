@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../theme/devdiary_fonts.dart';
 
 import '../main.dart';
 import '../models/diary_entry.dart';
@@ -152,11 +152,11 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
           : null,
       filled: true,
       fillColor: Colors.white,
-      labelStyle: GoogleFonts.manrope(
+      labelStyle: TextStyle(fontFamily: DevDiaryFonts.ui, 
         color: DevDiaryColors.purple,
         fontWeight: FontWeight.w700,
       ),
-      hintStyle: GoogleFonts.manrope(
+      hintStyle: TextStyle(fontFamily: DevDiaryFonts.ui, 
         color: DevDiaryColors.secondaryText,
       ),
       enabledBorder: OutlineInputBorder(
@@ -201,7 +201,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           _isEditing ? 'Modifica nota' : 'Nuova nota',
-          style: GoogleFonts.manrope(
+          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
             color: DevDiaryColors.darkPurple,
             fontWeight: FontWeight.w800,
           ),
@@ -227,7 +227,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                   children: [
                     TextFormField(
                       controller: _titleController,
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.text,
                       ),
                       decoration: _fieldDecoration(
@@ -248,7 +248,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                     TextFormField(
                       controller: _contentController,
                       maxLines: 5,
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.text,
                         height: 1.5,
                       ),
@@ -281,7 +281,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                         label: 'Tipo',
                         icon: Icons.category_rounded,
                       ),
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.text,
                         fontWeight: FontWeight.w600,
                       ),
@@ -321,7 +321,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
 
                     TextFormField(
                       controller: _tagsController,
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.text,
                       ),
                       decoration: _fieldDecoration(
@@ -343,7 +343,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                   children: [
                     TextFormField(
                       controller: _languageController,
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.text,
                       ),
                       decoration: _fieldDecoration(
@@ -405,7 +405,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                     Expanded(
                       child: Text(
                         'Preferita',
-                        style: GoogleFonts.manrope(
+                        style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                           color: DevDiaryColors.darkPurple,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -457,7 +457,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                         : _isEditing
                             ? 'Salva modifiche'
                             : 'Salva nota',
-                    style: GoogleFonts.manrope(
+                    style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -526,7 +526,7 @@ class _FormSection extends StatelessWidget {
 
               Text(
                 title,
-                style: GoogleFonts.manrope(
+                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                   color: DevDiaryColors.darkPurple,
                   fontSize: 16,
                   fontWeight: FontWeight.w800,

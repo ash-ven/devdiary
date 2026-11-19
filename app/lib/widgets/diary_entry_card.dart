@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../theme/devdiary_fonts.dart';
 
 import '../main.dart';
 import '../models/diary_entry.dart';
@@ -140,7 +140,7 @@ class DiaryEntryCard extends StatelessWidget {
                       entry.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.darkPurple,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -153,7 +153,7 @@ class DiaryEntryCard extends StatelessWidget {
                       metadata,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.purple,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -172,7 +172,7 @@ class DiaryEntryCard extends StatelessWidget {
                         const SizedBox(width: 5),
                         Text(
                           _formatDate(entry.updatedAt),
-                          style: GoogleFonts.manrope(
+                          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                             color: DevDiaryColors.secondaryText,
                             fontSize: 11,
                             fontWeight: FontWeight.w500,

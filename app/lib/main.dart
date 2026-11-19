@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'theme/devdiary_fonts.dart';
 
 import 'screens/dashboard_screen.dart';
 import 'screens/diary_list_screen.dart';
@@ -13,22 +13,22 @@ Future<void> main() async {
 }
 
 class DevDiaryColors {
-  static const Color background = Color(0xFFFCFCFF);
-  static const Color card = Color(0xFFFFFFFF);
+  static const Color background = Color(0xFFECEFF5);
+  static const Color card = Color(0xFFF7F8FC);
 
-  static const Color blue = Color(0xFF7F95D1);
-  static const Color lightBlue = Color(0xFFF0F4FF);
+  static const Color blue = Color(0xFF2445A8);
+  static const Color lightBlue = Color(0xFFD6E0FA);
 
   static const Color purple = Color(0xFF6F35D8);
-  static const Color darkPurple = Color(0xFF2E1778);
-  static const Color lightPurple = Color(0xFFF2ECFF);
+  static const Color darkPurple = Color(0xFF5321B5);
+  static const Color lightPurple = Color(0xFFE4D9FB);
 
   static const Color pink = Color(0xFFFF2E83);
-  static const Color lightPink = Color(0xFFFFEAF2);
+  static const Color lightPink = Color(0xFFFFD3E4);
 
-  static const Color text = Color(0xFF24175E);
-  static const Color secondaryText = Color(0xFF7066A0);
-  static const Color border = Color(0xFFD9D5F5);
+  static const Color text = Color(0xFF14213D);
+  static const Color secondaryText = Color(0xFF5C6378);
+  static const Color border = Color(0xFF7E88A5);
 }
 
 class DevDiaryApp extends StatelessWidget {
@@ -39,9 +39,9 @@ class DevDiaryApp extends StatelessWidget {
     final baseTheme = ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: DevDiaryColors.purple,
-        primary: DevDiaryColors.purple,
-        secondary: DevDiaryColors.blue,
+        seedColor: DevDiaryColors.blue,
+        primary: DevDiaryColors.blue,
+        secondary: DevDiaryColors.purple,
         tertiary: DevDiaryColors.pink,
         surface: DevDiaryColors.card,
       ),
@@ -54,7 +54,7 @@ class DevDiaryApp extends StatelessWidget {
         scaffoldBackgroundColor: DevDiaryColors.background,
 
         textTheme: baseTheme.textTheme.apply(
-          fontFamily: GoogleFonts.manrope().fontFamily,
+          fontFamily: DevDiaryFonts.ui,
           bodyColor: DevDiaryColors.text,
           displayColor: DevDiaryColors.text,
         ),
@@ -449,7 +449,7 @@ class _BottomItem extends StatelessWidget {
 
             Text(
               label,
-              style: GoogleFonts.manrope(
+              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                 color: color,
                 fontSize: 11,
                 fontWeight: selected
