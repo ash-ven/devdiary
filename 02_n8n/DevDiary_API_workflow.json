@@ -108,7 +108,8 @@
           "name": "MongoDB account"
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -164,7 +165,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ $input.all().map(item => item.json) }}",
+        "responseBody": "={{ $input.all().filter(item => item.json._id).map(item => Object.assign({}, item.json, { _id: ((id) => typeof id === 'string' ? id : (id && typeof id.toHexString === 'function') ? id.toHexString() : (id && id.buffer) ? Object.values(id.buffer).map(b => ('0' + Number(b).toString(16)).slice(-2)).join('') : String(id))(item.json._id) })) }}",
         "options": {
           "responseCode": 200
         }
@@ -422,7 +423,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{$json}}",
+        "responseBody": "={{ Object.assign({}, $json, { _id: ((id) => typeof id === 'string' ? id : (id && typeof id.toHexString === 'function') ? id.toHexString() : (id && id.buffer) ? Object.values(id.buffer).map(b => ('0' + Number(b).toString(16)).slice(-2)).join('') : String(id))($json._id) }) }}",
         "options": {
           "responseCode": 200
         }
@@ -901,12 +902,13 @@
           "id": "XxVRGSGikKpeeW6o",
           "name": "MongoDB account"
         }
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ $json }}",
+        "responseBody": "={{ $input.all().filter(item => item.json._id).map(item => Object.assign({}, item.json, { _id: ((id) => typeof id === 'string' ? id : (id && typeof id.toHexString === 'function') ? id.toHexString() : (id && id.buffer) ? Object.values(id.buffer).map(b => ('0' + Number(b).toString(16)).slice(-2)).join('') : String(id))(item.json._id) })) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
