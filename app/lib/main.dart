@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'screens/dashboard_screen.dart';
@@ -49,9 +49,8 @@ class DevDiaryApp extends StatelessWidget {
       theme: baseTheme.copyWith(
         scaffoldBackgroundColor: DevDiaryColors.background,
 
-        textTheme: GoogleFonts.manropeTextTheme(
-          baseTheme.textTheme,
-        ).apply(
+        textTheme: baseTheme.textTheme.apply(
+          fontFamily: GoogleFonts.manrope().fontFamily,
           bodyColor: DevDiaryColors.text,
           displayColor: DevDiaryColors.text,
         ),
