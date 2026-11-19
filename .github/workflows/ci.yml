@@ -38,6 +38,35 @@ jobs:
         if: failure()
         run: docker compose -f api/docker-compose.yml logs
 
+  app:
+    name: App Flutter - analisi, test e build web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.50.0
+          channel: stable
+      - name: Dipendenze
+        working-directory: app
+        run: flutter pub get
+      - name: Analisi
+        working-directory: app
+        run: flutter analyze
+      - name: Test
+        working-directory: app
+        run: flutter test
+      - name: Build web
+        env:
+          API_BASE_URL: http://localhost:5678/webhook
+        run: ./app/tool/build_web.sh
+      - name: Nessun riferimento all'API di Google Fonts
+        run: |
+          if grep -rl "fonts.googleapis.com" app/build/web; then
+            echo "La build contiene riferimenti a fonts.googleapis.com" >&2
+            exit 1
+          fi
+
   contrast:
     name: Contrasto dei colori (WCAG 2.1 AA)
     runs-on: ubuntu-latest
