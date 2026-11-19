@@ -105,9 +105,99 @@ function normalizeEntryInput(body) {
   return { ok: true, value: { title, content, type, language, code, tags, isFavorite } };
 }
 
+// ---------- filtri e visibilità ----------
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function escapeRegex(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function visitorFrom(headers, config) {
+  if (!config.demoMode) return { ok: true, visitorId: null };
+  const raw = String((headers || {})['x-demo-visitor'] ?? '').trim();
+  if (!UUID_RE.test(raw)) return fail(400, 'VISITOR_REQUIRED');
+  return { ok: true, visitorId: raw.toLowerCase() };
+}
+
+function scopeFilter(visitorId, config) {
+  if (!config.demoMode) return {};
+  return { $or: [{ isSample: true }, { ownerId: visitorId }] };
+}
+
+function listFilter(query, visitorId, config) {
+  const q = query || {};
+  const filter = {};
+  if (q.type) filter.type = String(q.type).trim().toLowerCase();
+  if (q.favorite !== undefined && q.favorite !== '') filter.isFavorite = String(q.favorite).toLowerCase() === 'true';
+  if (q.tag) filter.tags = String(q.tag).trim().toLowerCase();
+  filter.deletedAt = String(q.trash ?? '').toLowerCase() === 'true' ? { $ne: null } : null;
+
+  const conditions = [];
+  const scope = scopeFilter(visitorId, config);
+  if (scope.$or) conditions.push(scope);
+  const search = String(q.search ?? '').trim();
+  if (search) {
+    const regex = escapeRegex(search);
+    conditions.push({ $or: [{ title: { $regex: regex, $options: 'i' } }, { content: { $regex: regex, $options: 'i' } }] });
+  }
+  if (conditions.length === 1) Object.assign(filter, conditions[0]);
+  if (conditions.length > 1) filter.$and = conditions;
+
+  return { filter, sort: { createdAt: -1 } };
+}
+
+// ---------- date e note di esempio ----------
+
+function romeParts(date) {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Rome', hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  }).formatToParts(date);
+  return Object.fromEntries(parts.map((x) => [x.type, x.value]));
+}
+
+function romeWallTimeToUtc(y, m, d, hh, mm) {
+  const guess = Date.UTC(y, m - 1, d, hh, mm);
+  const p = romeParts(new Date(guess));
+  const asRome = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute);
+  return new Date(guess - (asRome - guess));
+}
+
+function seedToDocs(seed, now) {
+  const today = romeParts(now);
+  return (seed || []).map((entry) => {
+    const { daysAgo = 0, time = '09:00', ...rest } = entry;
+    const day = new Date(Date.UTC(+today.year, +today.month - 1, +today.day - daysAgo));
+    const [hh, mm] = String(time).split(':').map(Number);
+    const at = romeWallTimeToUtc(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate(), hh, mm).toISOString();
+    return { ...rest, isSample: true, ownerId: null, deletedAt: null, createdAt: at, updatedAt: at };
+  });
+}
+
+// ---------- export ----------
+
+function buildMarkdown(entries) {
+  let markdown = '# DevDiary Export\n\n';
+  for (const entry of entries || []) {
+    markdown += `## ${entry.title ?? 'Senza titolo'}\n\n`;
+    markdown += `**Tipo:** ${entry.type ?? 'note'}\n\n`;
+    if (Array.isArray(entry.tags) && entry.tags.length > 0) {
+      markdown += `**Tag:** ${entry.tags.map((tag) => `#${tag}`).join(' ')}\n\n`;
+    }
+    markdown += `${entry.content ?? ''}\n\n`;
+    if (entry.language) markdown += `**Linguaggio:** ${entry.language}\n\n`;
+    if (entry.code) markdown += '```' + (entry.language ?? '') + '\n' + entry.code + '\n```\n\n';
+    markdown += '---\n\n';
+  }
+  return markdown;
+}
+
 if (typeof module !== 'undefined') {
   module.exports = {
     CONFIG, TYPES, LIMITS, MESSAGES,
     fail, done, isObjectId, toHexId, toPublic, normalizeEntryInput,
+    escapeRegex, visitorFrom, scopeFilter, listFilter,
+    romeWallTimeToUtc, seedToDocs, buildMarkdown,
   };
 }
