@@ -1,0 +1,162 @@
+{
+  "info": {
+    "name": "DevDiary API",
+    "description": "Test di contratto dell'API DevDiary (n8n + MongoDB). Cartella Contratto: comportamento della traccia (DEMO_MODE=false). Cartella Demo: regole della demo pubblica (DEMO_MODE=true).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Contratto",
+      "item": [
+        {
+          "name": "GET status",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ] } }
+          ],
+          "request": { "method": "GET", "url": "{{baseUrl}}/status" }
+        },
+        {
+          "name": "POST crea nota",
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+              "pm.collectionVariables.set('runTag', 'newman' + Date.now());"
+            ] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Nota {{runTag}}\",\n  \"content\": \"Creata dai test di contratto\",\n  \"type\": \"note\",\n  \"tags\": \"newman, test\"\n}" },
+            "url": "{{baseUrl}}/diary"
+          }
+        },
+        {
+          "name": "GET lista",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const list = pm.response.json();",
+              "pm.test('risposta array con la nota creata', () => { pm.expect(list).to.be.an('array'); pm.expect(list.length).to.be.at.least(1); });",
+              "pm.test('ogni _id e una stringa esadecimale di 24 caratteri', () => list.forEach(e => pm.expect(e._id).to.match(/^[0-9a-f]{24}$/)));",
+              "if (list.length) pm.collectionVariables.set('noteId', list[0]._id);"
+            ] } }
+          ],
+          "request": { "method": "GET", "url": "{{baseUrl}}/diary?search={{runTag}}" }
+        },
+        {
+          "name": "GET dettaglio",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const note = pm.response.json();",
+              "pm.test('e la nota richiesta', () => { pm.expect(note._id).to.eql(pm.collectionVariables.get('noteId')); pm.expect(note.title).to.include(pm.collectionVariables.get('runTag')); });"
+            ] } }
+          ],
+          "request": { "method": "GET", "url": "{{baseUrl}}/diary/detail?id={{noteId}}" }
+        },
+        {
+          "name": "PUT modifica",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ] } }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Nota {{runTag}} modificata\",\n  \"content\": \"Contenuto aggiornato\",\n  \"type\": \"idea\",\n  \"tags\": [\"newman\"],\n  \"isFavorite\": true\n}" },
+            "url": "{{baseUrl}}/diary?id={{noteId}}"
+          }
+        },
+        {
+          "name": "GET export json",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ] } }
+          ],
+          "request": { "method": "GET", "url": "{{baseUrl}}/diary/export/json" }
+        },
+        {
+          "name": "GET export markdown",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('testo Markdown', () => pm.expect(pm.response.text().startsWith('# DevDiary Export')).to.be.true);"
+            ] } }
+          ],
+          "request": { "method": "GET", "url": "{{baseUrl}}/diary/export/markdown" }
+        },
+        {
+          "name": "DELETE elimina",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ] } }
+          ],
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/diary?id={{noteId}}" }
+        },
+        {
+          "name": "POST senza titolo",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"Senza titolo\",\n  \"type\": \"note\"\n}" },
+            "url": "{{baseUrl}}/diary"
+          }
+        },
+        {
+          "name": "POST senza contenuto",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Senza contenuto\",\n  \"type\": \"note\"\n}" },
+            "url": "{{baseUrl}}/diary"
+          }
+        },
+        {
+          "name": "POST tipo non valido",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Tipo sbagliato\",\n  \"content\": \"x\",\n  \"type\": \"bug\"\n}" },
+            "url": "{{baseUrl}}/diary"
+          }
+        },
+        {
+          "name": "GET dettaglio senza id",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));"
+            ] } }
+          ],
+          "request": { "method": "GET", "url": "{{baseUrl}}/diary/detail" }
+        }
+      ]
+    },
+    {
+      "name": "Demo",
+      "item": []
+    }
+  ]
+}
