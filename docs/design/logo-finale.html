@@ -1,0 +1,59 @@
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&display=swap" rel="stylesheet">
+<style>
+  .lf { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .lf { grid-template-columns: 1fr; } }
+  .tile { border-radius: 12px; overflow: hidden; }
+  .paper { background-color: #ECEFF5; background-image: linear-gradient(rgba(36,69,168,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(36,69,168,.08) 1px, transparent 1px); background-size: 16px 16px; color: #14213D; }
+  .night { background: #0E1A33; color: #EAF0FF; }
+  .hero { display: grid; place-items: center; padding: 34px 0; }
+  .hero img { width: 180px; height: 180px; }
+  .sizes { display: flex; align-items: flex-end; gap: 22px; padding: 18px 22px; flex-wrap: wrap; font: 12px system-ui, sans-serif; }
+  .sizes figure { margin: 0; display: grid; justify-items: center; gap: 6px; }
+  .lock { display: flex; align-items: center; gap: 12px; padding: 20px 22px; font-family: "Bricolage Grotesque", sans-serif; }
+  .lock img { width: 52px; height: 52px; }
+  .lock b { display: block; font-size: 32px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+  .lock span { font-size: 14px; font-weight: 500; opacity: .78; }
+  .lock-dark img { outline: 1.5px solid rgba(157,180,255,.45); outline-offset: -1px; border-radius: 13px; }
+  .tabs { display: flex; gap: 0; padding: 12px 14px 0; background: #DDE2EC; font: 12.5px system-ui, sans-serif; color: #14213D; }
+  .tabs .t { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 9px 9px 0 0; }
+  .tabs .t.on { background: #F7F8FC; }
+  .tabs .t img { width: 16px; height: 16px; image-rendering: auto; }
+  .masks { display: flex; gap: 18px; padding: 18px 22px; align-items: center; font: 12px system-ui, sans-serif; flex-wrap: wrap; }
+  .masks figure { margin: 0; display: grid; justify-items: center; gap: 6px; }
+  .masks img { width: 84px; height: 84px; }
+  .m-circle { border-radius: 50%; } .m-squircle { border-radius: 26px; } .m-drop { border-radius: 50% 50% 50% 12px; }
+  .files { margin-top: 16px; font-size: .85rem; color: var(--text-secondary); max-width: 90ch; }
+  .files code { font-size: .8rem; }
+</style>
+
+<h2>Logo definitivo: Foglio a margine</h2>
+<p class="subtitle">Il margine rosa attraversa il foglio da un bordo all'altro, come in un vero quaderno; la riga rientrata in viola chiaro è il codice. Sotto, il logo nelle situazioni in cui comparirà davvero.</p>
+
+<div class="lf">
+  <div class="tile paper">
+    <div class="hero"><img src="/files/devdiary-logo-final.svg" alt="Logo DevDiary"></div>
+    <div class="sizes">
+      <figure><img src="/files/devdiary-logo-final.svg" width="64" height="64" alt=""><figcaption>64</figcaption></figure>
+      <figure><img src="/files/devdiary-logo-final.svg" width="48" height="48" alt=""><figcaption>48</figcaption></figure>
+      <figure><img src="/files/favicon-32.png" width="32" height="32" alt=""><figcaption>32</figcaption></figure>
+      <figure><img src="/files/favicon-16.png" width="16" height="16" alt=""><figcaption>16, disegno dedicato</figcaption></figure>
+    </div>
+  </div>
+
+  <div style="display:grid; gap:16px">
+    <div class="tile paper lock"><img src="/files/devdiary-logo-final.svg" alt=""><div><b>DevDiary</b><span>quaderno tecnico</span></div></div>
+    <div class="tile night lock lock-dark"><img src="/files/devdiary-logo-final.svg" alt=""><div><b>DevDiary</b><span>quaderno tecnico</span></div></div>
+    <div class="tile">
+      <div class="tabs"><span class="t on"><img src="/files/favicon-16.png" alt="">DevDiary</span><span class="t">Posta in arrivo</span><span class="t">Documentazione</span></div>
+      <div style="height:14px; background:#F7F8FC"></div>
+    </div>
+    <div class="tile night masks">
+      <figure><img class="m-circle" src="/files/Icon-maskable-512.png" alt=""><figcaption>Android, cerchio</figcaption></figure>
+      <figure><img class="m-squircle" src="/files/Icon-maskable-512.png" alt=""><figcaption>iOS e Android</figcaption></figure>
+      <figure><img class="m-drop" src="/files/Icon-maskable-512.png" alt=""><figcaption>Android, goccia</figcaption></figure>
+      <figure><img src="/files/devdiary-logo-mono-512.png" alt="" style="background:#ECEFF5;border-radius:16px;padding:6px;width:84px;height:84px"><figcaption>monocromatico</figcaption></figure>
+    </div>
+  </div>
+</div>
+
+<p class="files">File pronti in <code>C:\Dev\devdiary\branding</code>: gli SVG (principale, versione da 16px, a tutto campo per le icone dell'app, monocromatico) e in <code>png\</code> le icone per Flutter web (<code>Icon-192</code>, <code>Icon-512</code>, <code>Icon-maskable-192/512</code>), <code>favicon.ico</code> con 16, 32 e 48px, <code>apple-touch-icon</code> e il logo da 64 a 1024px, tutti a sfondo trasparente dove serve.</p>

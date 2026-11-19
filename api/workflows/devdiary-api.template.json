@@ -104,8 +104,8 @@
       "name": "Find Diary Entries",
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       },
       "onError": "continueRegularOutput",
@@ -260,8 +260,8 @@
       "name": "Insert Diary Entry",
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       }
     },
@@ -381,8 +381,8 @@
       "alwaysOutputData": true,
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       }
     },
@@ -553,8 +553,8 @@
       "retryOnFail": false,
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       }
     },
@@ -640,8 +640,8 @@
       "name": "Update Diary Entry",
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       }
     },
@@ -761,8 +761,8 @@
       "retryOnFail": false,
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       }
     },
@@ -829,8 +829,8 @@
       "name": "Delete Diary Entry",
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       }
     },
@@ -899,8 +899,8 @@
       "name": "Find Entries for JSON Export",
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       },
       "alwaysOutputData": true
@@ -951,8 +951,8 @@
       "name": "Find Entries for Markdown Export",
       "credentials": {
         "mongoDb": {
-          "id": "XxVRGSGikKpeeW6o",
-          "name": "MongoDB account"
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
         }
       }
     },

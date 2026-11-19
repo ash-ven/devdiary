@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <title>DevDiary</title>
+  <defs>
+    <clipPath id="foglio"><rect width="16" height="16" rx="3.5"/></clipPath>
+  </defs>
+  <rect width="16" height="16" rx="3.5" fill="#2445A8"/>
+  <rect x="4" width="2" height="16" fill="#FF2E83" clip-path="url(#foglio)"/>
+  <rect x="8" y="4" width="5" height="2" rx="1" fill="#F7F8FC"/>
+  <rect x="10" y="7" width="4" height="2" rx="1" fill="#C9B8FF"/>
+  <rect x="8" y="10" width="3" height="2" rx="1" fill="#F7F8FC"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>DevDiary</title>
+  <!-- a tutto campo: il sistema operativo applica la propria forma; il disegno resta nella zona sicura centrale (80%) -->
+  <rect width="64" height="64" fill="#2445A8"/>
+  <rect x="20" y="0" width="3.2" height="64" fill="#FF2E83"/>
+  <rect x="27.6" y="23" width="16.8" height="3.6" rx="1.8" fill="#F7F8FC"/>
+  <rect x="32.4" y="30.2" width="13.6" height="3.6" rx="1.8" fill="#C9B8FF"/>
+  <rect x="27.6" y="37.4" width="10.4" height="3.6" rx="1.8" fill="#F7F8FC"/>
+</svg>

@@ -1,0 +1,161 @@
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  .pal-intro { max-width: 70ch; }
+  .cards .card-image { display: block; aspect-ratio: auto; padding: 14px; background: #ECEEF3; color: #1B1F4B; }
+  .pv { font-family: "Bricolage Grotesque", system-ui, sans-serif; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,.08); }
+  .pv-light, .pv-dark { padding: 16px 16px 14px; }
+  .pv-light { background: var(--paper); color: var(--ink);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 18px 18px; }
+  .pv-dark { background: var(--night); color: var(--night-ink);
+    background-image: linear-gradient(var(--night-grid) 1px, transparent 1px), linear-gradient(90deg, var(--night-grid) 1px, transparent 1px); background-size: 18px 18px; }
+  .pv .app { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; letter-spacing: -.02em; margin-bottom: 10px; }
+  .pv .app i { width: 18px; height: 18px; border-radius: 5px; background: var(--primary); display: inline-block; position: relative; }
+  .pv .app i::after { content: ""; position: absolute; right: -3px; bottom: -3px; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
+  .pv .sheet { background: var(--sheet); border-radius: 10px; padding: 12px 14px 12px 26px; position: relative; box-shadow: 0 8px 20px -14px rgba(0,0,0,.45); }
+  .pv-dark .sheet { background: var(--night-sheet); }
+  .pv .sheet::before { content: ""; position: absolute; left: 14px; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: .55; }
+  .pv .marks { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 7px; }
+  .pv .mk { font-size: 11px; font-weight: 700; padding: 0 .45em; line-height: 1.6; border-radius: 3px 7px 4px 8px / 7px 3px 8px 4px; }
+  .pv h4 { margin: 0 0 4px; font-size: 18px; line-height: 1.1; font-weight: 800; letter-spacing: -.03em; }
+  .pv p { margin: 0 0 9px; font-size: 12.5px; line-height: 1.45; opacity: .78; }
+  .pv .code { font-family: "JetBrains Mono", monospace; font-size: 11px; background: var(--code); color: #EEF0FA; border-radius: 7px; padding: 7px 9px; margin-bottom: 10px; }
+  .pv .code .k { color: var(--code-k); } .pv .code .s { color: var(--code-s); }
+  .pv .btns { display: flex; gap: 6px; }
+  .pv .btn { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 7px; background: var(--primary); color: var(--on-primary); }
+  .pv .btn.alt { background: transparent; color: inherit; box-shadow: inset 0 0 0 1px currentColor; opacity: .7; }
+  .pv-dark .btn { background: var(--night-primary); color: var(--night); }
+  .sw { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 12px 0 6px; }
+  .sw div { font-size: 10.5px; line-height: 1.3; }
+  .sw b { display: block; height: 30px; border-radius: 6px; margin-bottom: 3px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+  .sw span { display: block; font-family: "JetBrains Mono", monospace; opacity: .7; }
+  .types { display: flex; gap: 4px; margin-top: 6px; }
+  .types span { flex: 1; font-size: 10.5px; text-align: center; padding: 3px 0; border-radius: 4px; font-weight: 700; }
+  .pick { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: #1B1F4B; color: #fff; margin-left: 6px; vertical-align: middle; }
+</style>
+
+<h2>Che colori dare a DevDiary?</h2>
+<p class="subtitle pal-intro">Tre direzioni, ognuna con un'idea dietro. Ogni scheda mostra la stessa nota in chiaro e in scuro, i colori base e quelli dei cinque tipi di nota. Clicca quella che ti convince di più; se vuoi mescolarle, scrivilo nella chat.</p>
+
+<div class="cards">
+
+  <!-- A: matita rossa e blu -->
+  <div class="card" data-choice="matita" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pv" style="--paper:#F5F7FB; --grid:rgba(36,69,168,.08); --sheet:#FFFFFF; --ink:#14213D; --primary:#2445A8; --on-primary:#FFFFFF; --accent:#D7263D; --code:#14213D; --code-k:#9DB4FF; --code-s:#FF9AA7; --night:#0E1A33; --night-grid:rgba(157,180,255,.08); --night-sheet:#16264A; --night-ink:#EAF0FF; --night-primary:#9DB4FF;">
+        <div class="pv-light">
+          <div class="app"><i></i>DevDiary</div>
+          <div class="sheet">
+            <div class="marks"><span class="mk" style="background:#FAD4D9;color:#A3172A">Errore risolto</span></div>
+            <h4>Workflow non pubblicato</h4>
+            <p>La Production URL risponde solo con il workflow attivo.</p>
+            <div class="code"><span class="k">await</span> http.get(<span class="s">'$base/status'</span>)</div>
+            <div class="btns"><span class="btn">Salva nota</span><span class="btn alt">Annulla</span></div>
+          </div>
+        </div>
+        <div class="pv-dark">
+          <div class="sheet">
+            <div class="marks"><span class="mk" style="background:rgba(215,38,61,.32);color:#FFC4CC">Errore risolto</span></div>
+            <h4>Workflow non pubblicato</h4>
+            <div class="btns"><span class="btn">Salva nota</span><span class="btn alt">Annulla</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sw">
+        <div><b style="background:#F5F7FB"></b>Carta<span>F5F7FB</span></div>
+        <div><b style="background:#14213D"></b>Inchiostro<span>14213D</span></div>
+        <div><b style="background:#2445A8"></b>Blu matita<span>2445A8</span></div>
+        <div><b style="background:#D7263D"></b>Rosso matita<span>D7263D</span></div>
+        <div><b style="background:#5C6378"></b>Grafite<span>5C6378</span></div>
+        <div><b style="background:#0E1A33"></b>Notte<span>0E1A33</span></div>
+      </div>
+      <div class="types">
+        <span style="background:#D6E0FA;color:#1C3A8F">appunto</span><span style="background:#CDEFF0;color:#0A6670">snippet</span><span style="background:#FFEFA6;color:#7A5C00">idea</span><span style="background:#FAD4D9;color:#A3172A">errore</span><span style="background:#D3F0DF;color:#22704A">link</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Matita rossa e blu <span class="pick">la mia scelta</span></h3>
+      <p>La matita con cui si correggevano i compiti: blu per la struttura, rosso per gli errori. Per un diario nato da un corso è un'idea che si ricorda, ed è coerente con il quaderno a quadretti e il tema Blueprint che ti erano piaciuti.</p>
+    </div>
+  </div>
+
+  <!-- B: ottanio e corallo -->
+  <div class="card" data-choice="ottanio" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pv" style="--paper:#F2F5F3; --grid:rgba(11,85,99,.08); --sheet:#FFFFFF; --ink:#0F2A2E; --primary:#0B5563; --on-primary:#FFFFFF; --accent:#F2665A; --code:#0F2A2E; --code-k:#7FD3C9; --code-s:#FFB4A8; --night:#0B2226; --night-grid:rgba(127,211,201,.08); --night-sheet:#123238; --night-ink:#E8F3F1; --night-primary:#7FD3C9;">
+        <div class="pv-light">
+          <div class="app"><i></i>DevDiary</div>
+          <div class="sheet">
+            <div class="marks"><span class="mk" style="background:#FFD9D3;color:#B23A2E">Errore risolto</span></div>
+            <h4>Workflow non pubblicato</h4>
+            <p>La Production URL risponde solo con il workflow attivo.</p>
+            <div class="code"><span class="k">await</span> http.get(<span class="s">'$base/status'</span>)</div>
+            <div class="btns"><span class="btn">Salva nota</span><span class="btn alt">Annulla</span></div>
+          </div>
+        </div>
+        <div class="pv-dark">
+          <div class="sheet">
+            <div class="marks"><span class="mk" style="background:rgba(242,102,90,.3);color:#FFC9C1">Errore risolto</span></div>
+            <h4>Workflow non pubblicato</h4>
+            <div class="btns"><span class="btn">Salva nota</span><span class="btn alt">Annulla</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sw">
+        <div><b style="background:#F2F5F3"></b>Carta<span>F2F5F3</span></div>
+        <div><b style="background:#0F2A2E"></b>Inchiostro<span>0F2A2E</span></div>
+        <div><b style="background:#0B5563"></b>Ottanio<span>0B5563</span></div>
+        <div><b style="background:#F2665A"></b>Corallo<span>F2665A</span></div>
+        <div><b style="background:#E3B23C"></b>Senape<span>E3B23C</span></div>
+        <div><b style="background:#0B2226"></b>Notte<span>0B2226</span></div>
+      </div>
+      <div class="types">
+        <span style="background:#CFE6EA;color:#0B5563">appunto</span><span style="background:#D8E3F5;color:#2F5A9A">snippet</span><span style="background:#F8E7B8;color:#7E5C0D">idea</span><span style="background:#FFD9D3;color:#B23A2E">errore</span><span style="background:#D9EBDD;color:#3D7650">link</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Ottanio e corallo</h3>
+      <p>Un verde-blu profondo e calmo con un accento caldo. È la più elegante e la meno vista fra le app per sviluppatori; ha meno legame con l'idea di quaderno, ma regge bene sia in chiaro sia in scuro.</p>
+    </div>
+  </div>
+
+  <!-- C: lavagna e gessetti -->
+  <div class="card" data-choice="lavagna" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pv" style="--paper:#F3F2EE; --grid:rgba(43,58,53,.07); --sheet:#FFFFFF; --ink:#22302B; --primary:#2F5D50; --on-primary:#FFFFFF; --accent:#E86F8E; --code:#22302B; --code-k:#F5D76E; --code-s:#9ED9B8; --night:#24332E; --night-grid:rgba(241,239,231,.06); --night-sheet:#2D3F39; --night-ink:#F1EFE7; --night-primary:#F5D76E;">
+        <div class="pv-light">
+          <div class="app"><i></i>DevDiary</div>
+          <div class="sheet">
+            <div class="marks"><span class="mk" style="background:#F9D3DD;color:#A8314F">Errore risolto</span></div>
+            <h4>Workflow non pubblicato</h4>
+            <p>La Production URL risponde solo con il workflow attivo.</p>
+            <div class="code"><span class="k">await</span> http.get(<span class="s">'$base/status'</span>)</div>
+            <div class="btns"><span class="btn">Salva nota</span><span class="btn alt">Annulla</span></div>
+          </div>
+        </div>
+        <div class="pv-dark">
+          <div class="sheet">
+            <div class="marks"><span class="mk" style="background:rgba(242,156,180,.3);color:#FFD0DC">Errore risolto</span></div>
+            <h4>Workflow non pubblicato</h4>
+            <div class="btns"><span class="btn">Salva nota</span><span class="btn alt">Annulla</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sw">
+        <div><b style="background:#F3F2EE"></b>Gesso<span>F3F2EE</span></div>
+        <div><b style="background:#22302B"></b>Ardesia<span>22302B</span></div>
+        <div><b style="background:#2F5D50"></b>Lavagna<span>2F5D50</span></div>
+        <div><b style="background:#E86F8E"></b>Gesso rosa<span>E86F8E</span></div>
+        <div><b style="background:#F5D76E"></b>Gesso giallo<span>F5D76E</span></div>
+        <div><b style="background:#24332E"></b>Notte<span>24332E</span></div>
+      </div>
+      <div class="types">
+        <span style="background:#D3E7F2;color:#2C6A8C">appunto</span><span style="background:#D5EFE2;color:#2F6E52">snippet</span><span style="background:#FBEFC2;color:#7D6413">idea</span><span style="background:#F9D3DD;color:#A8314F">errore</span><span style="background:#E6DDF3;color:#5E4A8A">link</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Lavagna e gessetti</h3>
+      <p>L'aula: ardesia verde scuro e gessi colorati per i tipi di nota. Molto riconoscibile e legata allo studio; dà il meglio in scuro, mentre in chiaro diventa più neutra.</p>
+    </div>
+  </div>
+
+</div>

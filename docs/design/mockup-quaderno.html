@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="carta">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DevDiary · proposta grafica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F3F5F9;
+  --grid: rgba(46, 74, 160, .075);
+  --sheet: #FFFFFF;
+  --ink: #1B1F4B;
+  --ink-2: #4E5380;
+  --ink-3: #7C80A6;
+  --rule: #DCE1EC;
+  --rule-strong: #C5CCDE;
+  --violet: #6F35D8;
+  --magenta: #FF2E83;
+  --margin-line: rgba(255, 46, 131, .45);
+  --code-bg: #1B1F4B;
+  --code-ink: #E7E9FF;
+  --hl-note: #DCCBFF;   --tx-note: #5A23C2;
+  --hl-snippet: #A6EAF4; --tx-snippet: #0A6577;
+  --hl-idea: #FFE66B;   --tx-idea: #7A5C00;
+  --hl-errore: #FFB8D2; --tx-errore: #B0124F;
+  --hl-link: #BDF2B5;   --tx-link: #23702C;
+  --ok: #1F9D55;
+  --focus: #6F35D8;
+  --shadow: 0 1px 0 rgba(27,31,75,.06), 0 12px 32px -18px rgba(27,31,75,.35);
+}
+[data-theme="blueprint"] {
+  --paper: #0E2247;
+  --grid: rgba(150, 190, 255, .09);
+  --sheet: #12295A;
+  --ink: #EEF3FF;
+  --ink-2: #B4C4E6;
+  --ink-3: #8094BF;
+  --rule: #234272;
+  --rule-strong: #2F5491;
+  --violet: #B79BFF;
+  --magenta: #FF6FA8;
+  --margin-line: rgba(255, 111, 168, .5);
+  --code-bg: #091933;
+  --code-ink: #E7E9FF;
+  --hl-note: rgba(183,155,255,.32);  --tx-note: #D9CCFF;
+  --hl-snippet: rgba(96,214,235,.30); --tx-snippet: #A8EEF8;
+  --hl-idea: rgba(255,222,90,.30);   --tx-idea: #FFE98F;
+  --hl-errore: rgba(255,111,168,.32); --tx-errore: #FFC2DA;
+  --hl-link: rgba(126,226,126,.28);  --tx-link: #C3F5BE;
+  --ok: #5FE39A;
+  --focus: #FFE66B;
+  --shadow: 0 0 0 1px rgba(150,190,255,.12), 0 18px 40px -20px rgba(0,0,0,.6);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-optical-sizing: auto;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: background-color .35s ease, color .35s ease;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+code, pre, .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+
+/* ---------- banner della proposta ---------- */
+.proposal {
+  display: flex; gap: 16px; align-items: center; justify-content: space-between;
+  padding: 10px 20px; font-size: 13.5px; color: var(--ink-2);
+  border-bottom: 1px dashed var(--rule-strong);
+  background: color-mix(in srgb, var(--paper) 88%, var(--violet));
+}
+.proposal strong { color: var(--ink); font-weight: 600; }
+
+/* ---------- struttura ---------- */
+.app {
+  display: grid;
+  grid-template-columns: 236px 396px minmax(0, 1fr);
+  height: calc(100vh - 42px);
+  min-height: 640px;
+}
+.app[data-view="dashboard"] { grid-template-columns: 236px minmax(0, 1fr); }
+.app[data-view="dashboard"] .list, .app[data-view="dashboard"] .detail { display: none; }
+.app[data-view="diario"] .dashboard { display: none; }
+
+/* ---------- menu laterale ---------- */
+.side {
+  display: flex; flex-direction: column; gap: 22px;
+  padding: 22px 16px 16px;
+  border-right: 1px solid var(--rule);
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; }
+.brand img { width: 40px; height: 40px; object-fit: contain; }
+.brand-name { font-size: 22px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.brand-sub { font-size: 12.5px; color: var(--ink-3); margin-top: 3px; }
+
+.nav { display: grid; gap: 2px; }
+.nav button {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 10px; border: 0; border-radius: 8px; background: none; cursor: pointer;
+  text-align: left; font-size: 15px; font-weight: 500; color: var(--ink-2);
+}
+.nav button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); }
+.nav button[aria-current="page"] { color: var(--ink); font-weight: 700; background: var(--sheet); box-shadow: var(--shadow); }
+.nav svg { width: 18px; height: 18px; flex: none; }
+.nav .count { margin-left: auto; font-size: 12.5px; color: var(--ink-3); font-weight: 500; }
+
+.side h3 { margin: 0 0 6px 10px; font-size: 13px; font-weight: 600; color: var(--ink-3); }
+.taglist { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 6px; }
+.taglist button {
+  border: 1px solid var(--rule-strong); background: transparent; border-radius: 999px;
+  padding: 2px 10px; font-size: 13px; color: var(--ink-2); cursor: pointer;
+}
+.taglist button:hover { border-color: var(--ink-2); color: var(--ink); }
+
+.side-foot { margin-top: auto; display: grid; gap: 10px; }
+.api-status {
+  display: flex; align-items: center; gap: 8px; padding: 9px 10px;
+  border-radius: 10px; border: 1px solid var(--rule); font-size: 13px; color: var(--ink-2);
+  background: color-mix(in srgb, var(--sheet) 70%, transparent);
+}
+.api-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 22%, transparent); }
+.api-status b { color: var(--ink); font-weight: 600; }
+.theme-switch { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 10px; border: 1px solid var(--rule); }
+.theme-switch button { border: 0; background: none; padding: 6px 4px; border-radius: 7px; font-size: 13px; cursor: pointer; color: var(--ink-2); }
+.theme-switch button[aria-pressed="true"] { background: var(--sheet); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
+
+/* ---------- lista (il diario) ---------- */
+.list { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
+.list-head { padding: 20px 18px 10px; display: grid; gap: 12px; }
+.search {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  background: var(--sheet); border: 1px solid var(--rule-strong); border-radius: 10px; box-shadow: var(--shadow);
+}
+.search svg { width: 17px; height: 17px; color: var(--ink-3); flex: none; }
+.search input { flex: 1; border: 0; outline: 0; background: transparent; font: inherit; color: var(--ink); }
+.search input::placeholder { color: var(--ink-3); }
+.kbd { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--ink-3); border: 1px solid var(--rule-strong); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; }
+
+.filters { display: flex; gap: 2px; flex-wrap: wrap; }
+.filters button {
+  border: 0; background: none; padding: 3px 9px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  color: var(--ink-2); border-radius: 3px 8px 4px 9px / 8px 3px 9px 4px;
+}
+.filters button:hover { color: var(--ink); }
+.filters button[aria-pressed="true"] { color: var(--ink); background: color-mix(in srgb, var(--ink) 10%, transparent); }
+.filters button[data-type][aria-pressed="true"] { background: var(--hl); color: var(--tx); }
+
+.entries { overflow-y: auto; padding: 0 10px 24px; scrollbar-width: thin; }
+.day { position: sticky; top: 0; z-index: 1; padding: 14px 8px 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); background: linear-gradient(var(--paper) 70%, transparent); }
+.day span { font-weight: 500; color: var(--ink-3); }
+.entry {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
+  width: 100%; padding: 11px 12px; margin: 2px 0; border: 0; border-radius: 10px;
+  background: transparent; text-align: left; cursor: pointer;
+}
+.entry:hover { background: color-mix(in srgb, var(--sheet) 65%, transparent); }
+.entry[aria-current="true"] { background: var(--sheet); box-shadow: var(--shadow); }
+.entry .title { font-size: 15.5px; font-weight: 650; letter-spacing: -.01em; line-height: 1.3; }
+.entry .excerpt { grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry .meta { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; margin-top: 5px; font-size: 12.5px; color: var(--ink-3); }
+.entry .star { color: var(--magenta); font-size: 15px; line-height: 1.2; }
+
+/* evidenziatore per i tipi */
+.mark {
+  display: inline-block; padding: 0 .45em; font-weight: 700; font-size: 12.5px; line-height: 1.6;
+  background: var(--hl); color: var(--tx);
+  border-radius: 3px 8px 4px 9px / 8px 3px 9px 4px;
+}
+[data-type="note"]    { --hl: var(--hl-note);    --tx: var(--tx-note); }
+[data-type="snippet"] { --hl: var(--hl-snippet); --tx: var(--tx-snippet); }
+[data-type="idea"]    { --hl: var(--hl-idea);    --tx: var(--tx-idea); }
+[data-type="errore"]  { --hl: var(--hl-errore);  --tx: var(--tx-errore); }
+[data-type="link"]    { --hl: var(--hl-link);    --tx: var(--tx-link); }
+
+/* ---------- dettaglio (il foglio) ---------- */
+.detail { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 18px 22px 0 18px; }
+.sheet {
+  position: relative; flex: 1; min-height: 0; overflow-y: auto;
+  background: var(--sheet); border-radius: 14px 14px 0 0; box-shadow: var(--shadow);
+  padding: 34px 48px 40px 92px;
+  transition: background-color .35s ease;
+}
+.sheet::before { /* margine del quaderno */
+  content: ""; position: absolute; top: 0; bottom: 0; left: 64px; width: 2px; background: var(--margin-line);
+}
+.sheet-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sheet-top .when { font-size: 13px; color: var(--ink-3); }
+.actions { margin-left: auto; display: flex; gap: 6px; }
+.actions button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 8px;
+  border: 1px solid var(--rule-strong); background: transparent; font-size: 13.5px; font-weight: 600; cursor: pointer; color: var(--ink-2);
+}
+.actions button:hover { color: var(--ink); border-color: var(--ink-2); }
+.actions button.fav { color: var(--magenta); border-color: color-mix(in srgb, var(--magenta) 45%, transparent); }
+.actions svg { width: 15px; height: 15px; }
+
+.sheet h1 {
+  margin: 18px 0 10px; max-width: 22ch;
+  font-size: clamp(30px, 3.2vw, 46px); line-height: 1.05; font-weight: 800; letter-spacing: -.035em;
+}
+.tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 26px; }
+.tags span { font-size: 13.5px; color: var(--ink-2); }
+.tags span::before { content: "#"; color: var(--ink-3); }
+
+.body { max-width: 68ch; }
+.body h2 { font-size: 17px; font-weight: 700; margin: 26px 0 6px; letter-spacing: -.01em; }
+.body h2 .num { display: inline-block; width: 26px; margin-left: -26px; color: var(--magenta); font-weight: 800; }
+.body p { margin: 0 0 10px; color: var(--ink-2); font-size: 15.5px; line-height: 1.6; }
+.body p code { font-size: .88em; padding: .05em .35em; border-radius: 5px; background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); }
+.body a { color: var(--violet); text-underline-offset: 3px; }
+
+.code {
+  margin: 14px 0 6px; border-radius: 12px; overflow: hidden; background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--code-ink) 12%, transparent);
+}
+.code-bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 16px; font-size: 12.5px; color: #A9AEDB; border-bottom: 1px solid rgba(231,233,255,.08); }
+.code-bar .lang { font-family: "JetBrains Mono", monospace; }
+.code-bar button { margin-left: auto; border: 1px solid rgba(231,233,255,.18); background: none; color: #E7E9FF; border-radius: 7px; padding: 3px 10px; font-size: 12.5px; cursor: pointer; }
+.code-bar button:hover { background: rgba(231,233,255,.08); }
+.code pre { font-variant-ligatures: none; margin: 0; padding: 16px 18px 18px; overflow-x: auto; font-size: 13.5px; line-height: 1.65; color: var(--code-ink); counter-reset: line; }
+.code pre .ln { display: block; padding-left: 2.6em; position: relative; }
+.code pre .ln::before { counter-increment: line; content: counter(line); position: absolute; left: 0; width: 1.6em; text-align: right; color: #5B6196; }
+.k { color: #C9A7FF; } .s { color: #9BE7A4; } .f { color: #7FD8F0; } .c { color: #6E74A8; font-style: italic; } .n { color: #FFC37A; } .p { color: #FF8DBA; }
+
+/* ---------- ispettore API ---------- */
+.inspector { background: var(--sheet); border-top: 1px dashed var(--rule-strong); box-shadow: var(--shadow); }
+.inspector > button {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 18px; border: 0; background: none; cursor: pointer; text-align: left; font-size: 13.5px; font-weight: 700;
+}
+.inspector > button .hint { font-weight: 500; color: var(--ink-3); }
+.inspector > button .chev { margin-left: auto; transition: transform .2s; color: var(--ink-3); }
+.inspector[data-open="false"] .chev { transform: rotate(180deg); }
+.inspector[data-open="false"] .insp-body { display: none; }
+.insp-body { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 18px; padding: 0 18px 16px; }
+.reqs { display: grid; gap: 2px; font-family: "JetBrains Mono", monospace; font-size: 12.5px; max-height: 132px; overflow-y: auto; }
+.req { display: grid; grid-template-columns: 58px minmax(0, 1fr) 40px 54px; gap: 10px; align-items: center; padding: 5px 8px; border-radius: 6px; }
+.req:first-child { background: color-mix(in srgb, var(--violet) 10%, transparent); }
+.req .m { font-weight: 600; }
+.req .m.get { color: var(--tx-snippet); } .req .m.put { color: var(--tx-idea); } .req .m.post { color: var(--tx-link); } .req .m.del { color: var(--tx-errore); }
+.req .u { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.req .st { color: var(--ok); } .req .ms { color: var(--ink-3); text-align: right; }
+.flow { display: grid; grid-template-columns: auto 1fr auto 1fr auto; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); align-self: center; }
+.flow .node { padding: 6px 9px; border-radius: 8px; border: 1px solid var(--rule-strong); text-align: center; background: var(--paper); }
+.flow .wire { height: 2px; background: var(--rule-strong); position: relative; overflow: hidden; border-radius: 2px; }
+.flow .wire::after { content: ""; position: absolute; inset: 0; width: 40%; background: var(--magenta); transform: translateX(-120%); }
+.flow.pulse .wire::after { animation: travel .7s ease-out forwards; }
+.flow.pulse .wire:nth-of-type(4)::after { animation-delay: .25s; }
+.flow-caption { grid-column: 1 / -1; font-weight: 500; color: var(--ink-3); margin-top: 6px; }
+@keyframes travel { to { transform: translateX(260%); } }
+
+/* ---------- dashboard ---------- */
+.dashboard { overflow-y: auto; padding: 34px 44px 60px; }
+.dash-inner { max-width: 1060px; }
+.dashboard h1 { margin: 0 0 12px; font-size: clamp(34px, 4vw, 54px); font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+.summary { max-width: 46ch; font-size: 22px; line-height: 1.5; color: var(--ink-2); margin: 0 0 34px; font-weight: 500; }
+.summary .mark { font-size: inherit; line-height: 1.35; padding: 0 .3em; }
+.panels { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
+.panel { background: var(--sheet); border-radius: 14px; box-shadow: var(--shadow); padding: 20px 22px; }
+.panel h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+.panel .sub { margin: 0 0 16px; font-size: 13.5px; color: var(--ink-3); }
+.p-heat { grid-column: span 8; }
+.p-types { grid-column: span 4; }
+.p-tags { grid-column: span 5; }
+.p-errors { grid-column: span 7; }
+.heat { display: grid; grid-template-columns: 26px repeat(26, 1fr); grid-template-rows: 16px repeat(7, 1fr); gap: 3px; }
+.heat .lbl { font-size: 11px; color: var(--ink-3); align-self: center; }
+.heat .mo { font-size: 11px; color: var(--ink-3); grid-row: 1; }
+.cell { aspect-ratio: 1; border-radius: 3px; background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.cell[data-l="1"] { background: color-mix(in srgb, var(--violet) 30%, transparent); }
+.cell[data-l="2"] { background: color-mix(in srgb, var(--violet) 58%, transparent); }
+.cell[data-l="3"] { background: var(--violet); }
+.cell[data-l="4"] { background: var(--magenta); }
+.heat-legend { display: flex; align-items: center; gap: 5px; margin-top: 12px; font-size: 12px; color: var(--ink-3); }
+.heat-legend .cell { width: 11px; }
+.stack { display: flex; height: 16px; border-radius: 5px; overflow: hidden; margin: 6px 0 16px; }
+.stack span { background: var(--hl); }
+.legend { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.legend li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.legend li b { margin-left: auto; font-weight: 700; }
+.legend .sw { width: 12px; height: 12px; border-radius: 3px; background: var(--hl); }
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: 82px 1fr 26px; gap: 10px; align-items: center; font-size: 14px; }
+.bar .track { display: block; height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--ink) 7%, transparent); overflow: hidden; }
+.bar .fill { display: block; height: 100%; border-radius: 5px; background: var(--violet); }
+.bar b { text-align: right; }
+.errs { display: grid; gap: 4px; }
+.err { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.err:last-child { border-bottom: 0; }
+.err .t { font-weight: 650; }
+.err .d { font-size: 13px; color: var(--ink-3); }
+.err .fix { grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-2); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1180px) {
+  .app { grid-template-columns: 76px 340px minmax(0, 1fr); }
+  .app[data-view="dashboard"] { grid-template-columns: 76px minmax(0, 1fr); }
+  .brand-name, .brand-sub, .nav .label, .nav .count, .side h3, .taglist, .api-status span, .theme-switch { display: none; }
+  .nav button { justify-content: center; }
+  .api-status { justify-content: center; }
+  .insp-body { grid-template-columns: 1fr; }
+  .flow { display: none; }
+  .p-heat, .p-types, .p-tags, .p-errors { grid-column: span 12; }
+}
+@media (max-width: 820px) {
+  .proposal { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .app, .app[data-view="dashboard"] { grid-template-columns: 1fr; height: auto; }
+  .side { flex-direction: row; align-items: center; padding: 12px 16px; border-right: 0; border-bottom: 1px solid var(--rule); }
+  .nav { grid-auto-flow: column; }
+  .side-foot { margin: 0 0 0 auto; }
+  .list { border-right: 0; max-height: 60vh; }
+  .detail { padding: 0 16px; }
+  .sheet { padding: 24px 20px 30px 40px; }
+  .sheet::before { left: 22px; }
+  .dashboard { padding: 24px 16px 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="proposal">
+  <span><strong>Proposta grafica per DevDiary</strong>, mockup statico con dati di esempio.</span>
+  <span>Prova il tema Carta o Blueprint in basso a sinistra, apri la Dashboard dal menu e clicca le note.</span>
+</div>
+
+<div class="app" id="app" data-view="diario">
+
+  <!-- menu laterale -->
+  <aside class="side" aria-label="Menu">
+    <div class="brand">
+      <img src="/files/devdiary_logo.png" alt="">
+      <div>
+        <div class="brand-name">DevDiary</div>
+        <div class="brand-sub">quaderno tecnico</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button data-go="diario" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6"/></svg>
+        <span class="label">Diario</span><span class="count">48</span>
+      </button>
+      <button data-go="diario" data-fav>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z"/></svg>
+        <span class="label">Preferiti</span><span class="count">12</span>
+      </button>
+      <button data-go="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        <span class="label">Dashboard</span>
+      </button>
+      <button data-go="diario">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+        <span class="label">Cestino</span><span class="count">3</span>
+      </button>
+    </nav>
+
+    <div>
+      <h3>Tag più usati</h3>
+      <div class="taglist">
+        <button>flutter</button><button>n8n</button><button>mongodb</button><button>http</button><button>docker</button><button>dart</button>
+      </div>
+    </div>
+
+    <div class="side-foot">
+      <div class="api-status" title="Ultima risposta di GET /status">
+        <span class="dot"></span><span><b>API online</b>, risposta in 12 ms</span>
+      </div>
+      <div class="theme-switch" role="group" aria-label="Tema">
+        <button data-theme-set="carta" aria-pressed="true">Carta</button>
+        <button data-theme-set="blueprint" aria-pressed="false">Blueprint</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- lista -->
+  <section class="list" aria-label="Note del diario">
+    <div class="list-head">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Cerca in titoli, testi e codice">
+        <span class="kbd">Ctrl K</span>
+      </label>
+      <div class="filters" role="group" aria-label="Filtra per tipo">
+        <button aria-pressed="true" data-filter="all">Tutto</button>
+        <button data-type="note" data-filter="note" aria-pressed="false">Note</button>
+        <button data-type="snippet" data-filter="snippet" aria-pressed="false">Snippet</button>
+        <button data-type="idea" data-filter="idea" aria-pressed="false">Idee</button>
+        <button data-type="errore" data-filter="errore" aria-pressed="false">Errori</button>
+        <button data-type="link" data-filter="link" aria-pressed="false">Link</button>
+      </div>
+    </div>
+    <div class="entries" id="entries"></div>
+  </section>
+
+  <!-- dettaglio -->
+  <section class="detail" aria-label="Nota selezionata">
+    <article class="sheet" id="sheet"></article>
+    <div class="inspector" id="inspector" data-open="true">
+      <button aria-expanded="true" aria-controls="insp-body">
+        Richieste all'API <span class="hint">cosa succede dietro ogni clic</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="insp-body" id="insp-body">
+        <div class="reqs" id="reqs"></div>
+        <div class="flow" id="flow">
+          <span class="node">Flutter</span><span class="wire"></span><span class="node">n8n</span><span class="wire"></span><span class="node">MongoDB</span>
+          <span class="flow-caption">Ogni richiesta passa dal webhook n8n, che valida i dati e interroga MongoDB.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- dashboard -->
+  <section class="dashboard" aria-label="Dashboard">
+    <div class="dash-inner">
+      <h1>Il tuo diario</h1>
+      <p class="summary">
+        Da luglio hai scritto 48 note:
+        <span class="mark" data-type="snippet">17 snippet</span>,
+        <span class="mark" data-type="errore">9 errori risolti</span>,
+        <span class="mark" data-type="idea">6 idee</span>,
+        <span class="mark" data-type="link">4 link</span>
+        e <span class="mark" data-type="note">12 appunti</span>.
+      </p>
+      <div class="panels">
+        <div class="panel p-heat">
+          <h2>Quando scrivi</h2>
+          <p class="sub">Note create o modificate negli ultimi sei mesi</p>
+          <div class="heat" id="heat"></div>
+          <div class="heat-legend">meno <span class="cell"></span><span class="cell" data-l="1"></span><span class="cell" data-l="2"></span><span class="cell" data-l="3"></span><span class="cell" data-l="4"></span> più</div>
+        </div>
+        <div class="panel p-types">
+          <h2>Per tipo</h2>
+          <p class="sub">Cosa finisce più spesso nel diario</p>
+          <div class="stack">
+            <span data-type="snippet" style="flex:17"></span><span data-type="note" style="flex:12"></span><span data-type="errore" style="flex:9"></span><span data-type="idea" style="flex:6"></span><span data-type="link" style="flex:4"></span>
+          </div>
+          <ul class="legend">
+            <li data-type="snippet"><span class="sw"></span>Snippet<b>17</b></li>
+            <li data-type="note"><span class="sw"></span>Appunti<b>12</b></li>
+            <li data-type="errore"><span class="sw"></span>Errori risolti<b>9</b></li>
+            <li data-type="idea"><span class="sw"></span>Idee<b>6</b></li>
+            <li data-type="link"><span class="sw"></span>Link<b>4</b></li>
+          </ul>
+        </div>
+        <div class="panel p-tags">
+          <h2>Tag più usati</h2>
+          <p class="sub">I cinque argomenti che tornano di più</p>
+          <div class="bars">
+            <div class="bar">flutter<span class="track"><span class="fill" style="width:100%"></span></span><b>14</b></div>
+            <div class="bar">n8n<span class="track"><span class="fill" style="width:79%"></span></span><b>11</b></div>
+            <div class="bar">mongodb<span class="track"><span class="fill" style="width:64%"></span></span><b>9</b></div>
+            <div class="bar">http<span class="track"><span class="fill" style="width:50%"></span></span><b>7</b></div>
+            <div class="bar">docker<span class="track"><span class="fill" style="width:36%"></span></span><b>5</b></div>
+          </div>
+        </div>
+        <div class="panel p-errors">
+          <h2>Errori risolti di recente</h2>
+          <p class="sub">Il problema e la soluzione, così la prossima volta basta cercare</p>
+          <div class="errs">
+            <div class="err"><span class="t">n8n restituisce _id come {buffer}</span><span class="d">oggi</span><span class="fix">Converto l'ObjectId in stringa esadecimale nella risposta del webhook.</span></div>
+            <div class="err"><span class="t">Flutter web chiede la Modalità sviluppatore</span><span class="d">oggi</span><span class="fix">Compilo da una copia senza le cartelle native: niente symlink dei plugin.</span></div>
+            <div class="err"><span class="t">Workflow non risponde perché non pubblicato</span><span class="d">14 agosto</span><span class="fix">Il webhook di produzione risponde solo con il workflow attivo.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const entries = [
+  { id: 'a1', day: 'Oggi', date: '19 novembre', type: 'errore', fav: true, time: '09:34',
+    title: 'n8n restituisce _id come {buffer}', tags: ['n8n', 'mongodb', 'objectid'],
+    excerpt: 'Dettaglio e modifica fallivano: l’id non arrivava come stringa.',
+    body: `
+      <h2><span class="num">?</span>Problema</h2>
+      <p>Dettaglio, modifica ed eliminazione delle note fallivano. L’app riceveva <code>_id</code> come oggetto <code>{ buffer: {…} }</code> invece che come stringa, e la chiamata al dettaglio finiva in 404.</p>
+      <h2><span class="num">!</span>Causa</h2>
+      <p>Il nodo MongoDB di n8n lascia l’ObjectId nel JSON. L’espressione della risposta lo copia campo per campo e perde la conversione in stringa.</p>
+      <h2><span class="num">✓</span>Soluzione</h2>
+      <p>Nella risposta del webhook converto <code>_id</code> in esadecimale prima di inviarlo, qualunque forma abbia.</p>
+      <div class="code"><div class="code-bar"><span class="lang">javascript</span><span>risposta del nodo 200 - Diary List</span><button>Copia</button></div>
+<pre><span class="ln"><span class="k">const</span> <span class="f">toHex</span> <span class="p">=</span> (id) <span class="p">=></span></span><span class="ln">  <span class="k">typeof</span> id <span class="p">===</span> <span class="s">'string'</span> <span class="p">?</span> id</span><span class="ln">  <span class="p">:</span> id<span class="p">?.</span><span class="f">toHexString</span><span class="p">?.</span>() <span class="p">??</span></span><span class="ln">    Object.<span class="f">values</span>(id.buffer)</span><span class="ln">      .<span class="f">map</span>(b <span class="p">=></span> b.<span class="f">toString</span>(<span class="n">16</span>).<span class="f">padStart</span>(<span class="n">2</span>, <span class="s">'0'</span>))</span><span class="ln">      .<span class="f">join</span>(<span class="s">''</span>);</span><span class="ln"></span><span class="ln"><span class="c">// solo i documenti veri: con il database vuoto torna []</span></span><span class="ln"><span class="k">return</span> $input.<span class="f">all</span>()</span><span class="ln">  .<span class="f">filter</span>(item <span class="p">=></span> item.json._id)</span><span class="ln">  .<span class="f">map</span>(item <span class="p">=></span> ({ ...item.json, _id: <span class="f">toHex</span>(item.json._id) }));</span></pre></div>`,
+    req: ['GET', '/diary/detail?id=6afeb4a37ab5376904d214ac', 41] },
+  { id: 'a2', day: 'Oggi', date: '19 novembre', type: 'snippet', fav: false, time: '10:12',
+    title: 'getEntries con filtro per tipo', tags: ['dart', 'flutter', 'http'],
+    excerpt: 'Il metodo del service che chiama GET /diary con i query parameter.',
+    body: `
+      <p>Il service centralizza tutte le chiamate a n8n. I filtri viaggiano come query parameter, mai nel path: <code>/diary?type=snippet&amp;favorite=true</code>.</p>
+      <div class="code"><div class="code-bar"><span class="lang">dart</span><span>lib/services/diary_api_service.dart</span><button>Copia</button></div>
+<pre><span class="ln">Future&lt;List&lt;DiaryEntry&gt;&gt; <span class="f">getEntries</span>({String<span class="p">?</span> type}) <span class="k">async</span> {</span><span class="ln">  <span class="k">final</span> uri <span class="p">=</span> Uri.<span class="f">parse</span>(<span class="s">'$baseUrl/diary'</span>).<span class="f">replace</span>(</span><span class="ln">    queryParameters: {<span class="k">if</span> (type <span class="p">!=</span> <span class="k">null</span>) <span class="s">'type'</span>: type},</span><span class="ln">  );</span><span class="ln">  <span class="k">final</span> res <span class="p">=</span> <span class="k">await</span> http.<span class="f">get</span>(uri);</span><span class="ln">  <span class="k">if</span> (res.statusCode <span class="p">!=</span> <span class="n">200</span>) <span class="k">throw</span> <span class="f">ApiException</span>(res);</span><span class="ln">  <span class="k">return</span> (<span class="f">jsonDecode</span>(res.body) <span class="k">as</span> List)</span><span class="ln">      .<span class="f">map</span>((e) <span class="p">=></span> DiaryEntry.<span class="f">fromJson</span>(e))</span><span class="ln">      .<span class="f">toList</span>();</span><span class="ln">}</span></pre></div>`,
+    req: ['GET', '/diary/detail?id=6afeb6c1a41ee38fb94abb90', 38] },
+  { id: 'a3', day: 'Oggi', date: '19 novembre', type: 'note', fav: false, time: '08:58',
+    title: 'Flutter web senza Modalità sviluppatore', tags: ['flutter', 'windows'],
+    excerpt: 'flutter build web chiede i symlink: compilo da una copia senza cartelle native.',
+    body: `<p>Su Windows <code>flutter build web</code> crea i symlink dei plugin anche per le piattaforme native e si ferma se la Modalità sviluppatore è spenta.</p><p>Compilando da una copia del progetto che contiene solo <code>lib</code>, <code>web</code> e <code>assets</code>, la build web parte senza toccare le impostazioni di sistema.</p>`,
+    req: ['GET', '/diary/detail?id=6afeb6d2a41ee38fb94abb91', 35] },
+  { id: 'a4', day: 'Ieri', date: '18 novembre', type: 'idea', fav: true, time: '18:20',
+    title: 'Mostrare le chiamate API dentro l’app', tags: ['ux', 'api', 'portfolio'],
+    excerpt: 'Un pannello che racconta cosa succede dietro ogni clic.',
+    body: `<p>Chi prova la demo vede l’interfaccia ma non il backend. Un pannello in basso potrebbe elencare ogni richiesta: metodo, endpoint, codice di risposta e tempo.</p><p>Così anche chi non apre il codice capisce che dietro c’è un’API vera, con validazione ed errori gestiti.</p>`,
+    req: ['GET', '/diary/detail?id=6afe9d01a41ee38fb94abb80', 44] },
+  { id: 'a5', day: 'Ieri', date: '18 novembre', type: 'link', fav: false, time: '11:05',
+    title: 'Documentazione del package http', tags: ['flutter', 'http', 'docs'],
+    excerpt: 'pub.dev/packages/http: richieste, header, gestione degli errori.',
+    body: `<p>Riferimento per le richieste HTTP da Flutter: <a href="#">pub.dev/packages/http</a>.</p><p>Utile la sezione sui client riutilizzabili e sui timeout.</p>`,
+    req: ['GET', '/diary/detail?id=6afe9d11a41ee38fb94abb81', 33] },
+  { id: 'a6', day: '14 agosto', date: '', type: 'errore', fav: true, time: '22:58',
+    title: 'Workflow non risponde perché non pubblicato', tags: ['n8n', 'webhook'],
+    excerpt: 'La Production URL risponde solo con il workflow attivo.',
+    body: `<h2><span class="num">?</span>Problema</h2><p>Postman riceveva 404 sulla Production URL, mentre la Test URL funzionava.</p><h2><span class="num">✓</span>Soluzione</h2><p>Salvare e attivare il workflow: la Production URL esiste solo per i workflow attivi.</p>`,
+    req: ['GET', '/diary/detail?id=6a7f8174546d458689c0e511', 52] },
+  { id: 'a7', day: '14 agosto', date: '', type: 'snippet', fav: false, time: '22:58',
+    title: 'Query MongoDB per tipo', tags: ['mongodb', 'query'],
+    excerpt: 'db.entries.find({ type: "snippet" }) ordinata per data.',
+    body: `<div class="code"><div class="code-bar"><span class="lang">javascript</span><span>mongosh</span><button>Copia</button></div><pre><span class="ln">db.entries</span><span class="ln">  .<span class="f">find</span>({ type: <span class="s">'snippet'</span> })</span><span class="ln">  .<span class="f">sort</span>({ createdAt: <span class="n">-1</span> })</span></pre></div>`,
+    req: ['GET', '/diary/detail?id=6a7f8158546d458689c0e510', 39] },
+  { id: 'a8', day: '14 agosto', date: '', type: 'note', fav: true, time: '22:57',
+    title: 'Appunti Flutter', tags: ['flutter', 'http'],
+    excerpt: 'Ripasso di Flutter e delle chiamate HTTP verso le API.',
+    body: `<p>Ripasso di Flutter e delle chiamate HTTP verso le API: <code>FutureBuilder</code> per il caricamento, stato di errore con il pulsante Riprova.</p>`,
+    req: ['GET', '/diary/detail?id=6a7f8145546d458689c0e50f', 36] },
+];
+const labels = { note: 'Appunto', snippet: 'Snippet', idea: 'Idea', errore: 'Errore risolto', link: 'Link' };
+const days = { 'Oggi': '19 novembre', 'Ieri': '18 novembre', '14 agosto': 'giovedì' };
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+let current = 'a1', filter = 'all';
+
+function renderList() {
+  const box = $('#entries');
+  const shown = entries.filter(e => filter === 'all' || e.type === filter);
+  let html = '', lastDay = null;
+  for (const e of shown) {
+    if (e.day !== lastDay) { html += `<div class="day">${e.day} <span>${days[e.day]}</span></div>`; lastDay = e.day; }
+    html += `<button class="entry" data-id="${e.id}" aria-current="${e.id === current}">
+      <span class="title">${e.title}</span>${e.fav ? '<span class="star" aria-label="Preferito">★</span>' : '<span></span>'}
+      <span class="excerpt">${e.excerpt}</span>
+      <span class="meta"><span class="mark" data-type="${e.type}">${labels[e.type]}</span>${e.tags.map(t => '#' + t).join(' ')}</span>
+    </button>`;
+  }
+  box.innerHTML = html || '<p style="padding:20px 10px;color:var(--ink-3)">Nessuna nota di questo tipo. Creane una con il pulsante Nuova nota.</p>';
+  $$('.entry', box).forEach(b => b.addEventListener('click', () => select(b.dataset.id)));
+}
+
+function renderSheet() {
+  const e = entries.find(x => x.id === current);
+  $('#sheet').innerHTML = `
+    <div class="sheet-top">
+      <span class="mark" data-type="${e.type}">${labels[e.type]}</span>
+      <span class="when">${e.day === 'Oggi' || e.day === 'Ieri' ? e.day.toLowerCase() : 'il ' + e.day} alle ${e.time}</span>
+      <div class="actions">
+        <button class="${e.fav ? 'fav' : ''}"><svg viewBox="0 0 24 24" fill="${e.fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z"/></svg>${e.fav ? 'Preferita' : 'Aggiungi ai preferiti'}</button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Modifica</button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Sposta nel cestino</button>
+      </div>
+    </div>
+    <h1>${e.title}</h1>
+    <div class="tags">${e.tags.map(t => `<span>${t}</span>`).join('')}</div>
+    <div class="body">${e.body}</div>`;
+}
+
+const reqLog = [
+  ['GET', '/diary/detail?id=6afeb4a37ab5376904d214ac', 200, 41],
+  ['GET', '/diary', 200, 84],
+  ['PUT', '/diary?id=6afeb4a37ab5376904d214ad', 200, 63],
+  ['POST', '/diary', 201, 71],
+  ['GET', '/status', 200, 12],
+];
+function renderReqs() {
+  $('#reqs').innerHTML = reqLog.slice(0, 8).map(([m, u, s, ms]) =>
+    `<div class="req"><span class="m ${m === 'DELETE' ? 'del' : m.toLowerCase()}">${m}</span><span class="u">${u}</span><span class="st">${s}</span><span class="ms">${ms} ms</span></div>`).join('');
+}
+function pulse() {
+  const f = $('#flow'); f.classList.remove('pulse'); void f.offsetWidth; f.classList.add('pulse');
+}
+function select(id) {
+  current = id;
+  const e = entries.find(x => x.id === id);
+  reqLog.unshift([e.req[0], e.req[1], 200, e.req[2]]);
+  renderList(); renderSheet(); renderReqs(); pulse();
+  $('#sheet').scrollTop = 0;
+}
+
+$$('.filters button').forEach(b => b.addEventListener('click', () => {
+  filter = b.dataset.filter;
+  $$('.filters button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  const q = filter === 'all' ? '/diary' : '/diary?type=' + filter;
+  reqLog.unshift(['GET', q, 200, 60 + Math.round(Math.random() * 30)]);
+  renderList(); renderReqs(); pulse();
+}));
+
+$$('[data-go]').forEach(b => b.addEventListener('click', () => {
+  $('#app').dataset.view = b.dataset.go;
+  $$('.nav button').forEach(x => x.removeAttribute('aria-current'));
+  b.setAttribute('aria-current', 'page');
+}));
+
+$$('[data-theme-set]').forEach(b => b.addEventListener('click', () => {
+  document.documentElement.dataset.theme = b.dataset.themeSet;
+  $$('[data-theme-set]').forEach(x => x.setAttribute('aria-pressed', x === b));
+}));
+
+$('#inspector > button').addEventListener('click', (ev) => {
+  const box = $('#inspector'); const open = box.dataset.open !== 'true';
+  box.dataset.open = open; ev.currentTarget.setAttribute('aria-expanded', open);
+});
+
+// heatmap: 26 settimane, valori pseudo-casuali ma stabili
+(function heat() {
+  const el = $('#heat'); let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const months = { 0: 'giu', 4: 'lug', 9: 'ago', 13: 'set', 17: 'ott', 22: 'nov' };
+  let html = '<span></span>';
+  for (let w = 0; w < 26; w++) html += `<span class="mo" style="grid-column:${w + 2}">${months[w] || ''}</span>`;
+  const dl = ['lun', '', 'mer', '', 'ven', '', ''];
+  for (let d = 0; d < 7; d++) {
+    html += `<span class="lbl" style="grid-row:${d + 2};grid-column:1">${dl[d]}</span>`;
+    for (let w = 0; w < 26; w++) {
+      const active = w >= 6 && w <= 11 ? 0.55 : (w >= 22 ? 0.45 : 0.12);
+      const r = rnd(); let l = 0;
+      if (r < active) l = r < active * .15 ? 4 : r < active * .4 ? 3 : r < active * .7 ? 2 : 1;
+      if (d >= 5 && l > 1) l--;
+      html += `<span class="cell" data-l="${l}" style="grid-row:${d + 2};grid-column:${w + 2}"></span>`;
+    }
+  }
+  el.innerHTML = html;
+})();
+
+renderList(); renderSheet(); renderReqs();
+</script>
+</body>
+</html>

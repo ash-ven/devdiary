@@ -1,0 +1,5 @@
+_archivio/
+node_modules/
+api/workflows/dist/
+.dart_tool/
+build/
