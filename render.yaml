@@ -1,0 +1,51 @@
+# Blueprint Render di DevDiary: API (n8n dietro il proxy, Docker) e sito statico (Flutter web).
+# I valori con sync: false li inserisce la persona titolare nella dashboard di Render;
+# quelli con generateValue li crea Render. Nessun segreto è scritto in questo file.
+services:
+  - type: web
+    name: devdiary-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: ./api
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: dev_diary
+      - key: DEMO_MODE
+        value: "true"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: RESET_TOKEN
+        generateValue: true
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+
+  - type: web
+    name: devdiary
+    runtime: static
+    buildCommand: ./app/tool/build_web.sh
+    staticPublishPath: ./app/build/web
+    autoDeploy: true
+    envVars:
+      - key: API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
