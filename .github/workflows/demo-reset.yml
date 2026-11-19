@@ -1,0 +1,32 @@
+name: Reset della demo
+
+# Ogni notte riporta la demo pubblica alle note di esempio (03:00 in inverno, 04:00 in estate, ora italiana).
+# Si può avviare anche a mano da Actions → "Reset della demo" → Run workflow.
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  reset:
+    name: Ripristina le note di esempio
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chiama il webhook di reset
+        env:
+          RESET_TOKEN: ${{ secrets.RESET_TOKEN }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          if [ -z "$RESET_TOKEN" ] || [ -z "$API_BASE_URL" ]; then
+            echo "::warning::Secret RESET_TOKEN o variabile API_BASE_URL non impostati: reset saltato."
+            exit 0
+          fi
+          # Il primo tentativo sveglia il servizio gratuito di Render (circa un minuto).
+          response=$(curl --silent --show-error --fail-with-body \
+            --retry 6 --retry-delay 20 --retry-all-errors --max-time 120 \
+            -X POST -H "X-Reset-Token: $RESET_TOKEN" \
+            "$API_BASE_URL/demo/reset")
+          echo "$response"
+          echo "$response" | grep -q '"Demo ripristinata"'
