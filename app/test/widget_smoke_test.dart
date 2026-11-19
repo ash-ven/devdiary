@@ -7,7 +7,13 @@ import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('app uses the bundled font and new colors', (tester) async {
-    DiaryApiService.defaultClient = MockClient((req) async => http.Response('[]', 200, headers: {'content-type': 'application/json'}));
+    DiaryApiService.defaultClient = MockClient(
+      (req) async => http.Response(
+        '[]',
+        200,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
     addTearDown(() => DiaryApiService.defaultClient = null);
 
     await tester.pumpWidget(const DevDiaryApp());

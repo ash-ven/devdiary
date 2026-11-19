@@ -3,3 +3,6 @@ node_modules/
 api/workflows/dist/
 .dart_tool/
 build/
+
+# Generato da flutter gen-l10n (pub get)
+app/lib/l10n/*.dart

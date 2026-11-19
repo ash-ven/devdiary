@@ -8,10 +8,7 @@ import '../services/diary_api_service.dart';
 class DiaryFormScreen extends StatefulWidget {
   final DiaryEntry? entry;
 
-  const DiaryFormScreen({
-    super.key,
-    this.entry,
-  });
+  const DiaryFormScreen({super.key, this.entry});
 
   @override
   State<DiaryFormScreen> createState() => _DiaryFormScreenState();
@@ -40,25 +37,15 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
 
     final entry = widget.entry;
 
-    _titleController = TextEditingController(
-      text: entry?.title ?? '',
-    );
+    _titleController = TextEditingController(text: entry?.title ?? '');
 
-    _contentController = TextEditingController(
-      text: entry?.content ?? '',
-    );
+    _contentController = TextEditingController(text: entry?.content ?? '');
 
-    _tagsController = TextEditingController(
-      text: entry?.tags.join(', ') ?? '',
-    );
+    _tagsController = TextEditingController(text: entry?.tags.join(', ') ?? '');
 
-    _languageController = TextEditingController(
-      text: entry?.language ?? '',
-    );
+    _languageController = TextEditingController(text: entry?.language ?? '');
 
-    _codeController = TextEditingController(
-      text: entry?.code ?? '',
-    );
+    _codeController = TextEditingController(text: entry?.code ?? '');
 
     _selectedType = entry?.type ?? 'note';
     _isFavorite = entry?.isFavorite ?? false;
@@ -145,46 +132,34 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
       hintText: hint,
       alignLabelWithHint: true,
       prefixIcon: icon != null
-          ? Icon(
-              icon,
-              color: DevDiaryColors.purple,
-            )
+          ? Icon(icon, color: DevDiaryColors.purple)
           : null,
       filled: true,
       fillColor: Colors.white,
-      labelStyle: TextStyle(fontFamily: DevDiaryFonts.ui, 
+      labelStyle: TextStyle(
+        fontFamily: DevDiaryFonts.ui,
         color: DevDiaryColors.purple,
         fontWeight: FontWeight.w700,
       ),
-      hintStyle: TextStyle(fontFamily: DevDiaryFonts.ui, 
+      hintStyle: TextStyle(
+        fontFamily: DevDiaryFonts.ui,
         color: DevDiaryColors.secondaryText,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(
-          color: DevDiaryColors.border,
-          width: 1.2,
-        ),
+        borderSide: const BorderSide(color: DevDiaryColors.border, width: 1.2),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(
-          color: DevDiaryColors.purple,
-          width: 1.6,
-        ),
+        borderSide: const BorderSide(color: DevDiaryColors.purple, width: 1.6),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(
-          color: DevDiaryColors.pink,
-        ),
+        borderSide: const BorderSide(color: DevDiaryColors.pink),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(
-          color: DevDiaryColors.pink,
-          width: 1.5,
-        ),
+        borderSide: const BorderSide(color: DevDiaryColors.pink, width: 1.5),
       ),
     );
   }
@@ -201,7 +176,8 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           _isEditing ? 'Modifica nota' : 'Nuova nota',
-          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+          style: TextStyle(
+            fontFamily: DevDiaryFonts.ui,
             color: DevDiaryColors.darkPurple,
             fontWeight: FontWeight.w800,
           ),
@@ -209,12 +185,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
       ),
 
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          28,
-          18,
-          28,
-          40,
-        ),
+        padding: const EdgeInsets.fromLTRB(28, 18, 28, 40),
         child: Form(
           key: _formKey,
           child: Column(
@@ -227,7 +198,8 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                   children: [
                     TextFormField(
                       controller: _titleController,
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.text,
                       ),
                       decoration: _fieldDecoration(
@@ -248,7 +220,8 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                     TextFormField(
                       controller: _contentController,
                       maxLines: 5,
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.text,
                         height: 1.5,
                       ),
@@ -281,16 +254,14 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                         label: 'Tipo',
                         icon: Icons.category_rounded,
                       ),
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.text,
                         fontWeight: FontWeight.w600,
                       ),
                       dropdownColor: Colors.white,
                       items: const [
-                        DropdownMenuItem(
-                          value: 'note',
-                          child: Text('Nota'),
-                        ),
+                        DropdownMenuItem(value: 'note', child: Text('Nota')),
                         DropdownMenuItem(
                           value: 'errore',
                           child: Text('Errore'),
@@ -299,14 +270,8 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                           value: 'snippet',
                           child: Text('Snippet'),
                         ),
-                        DropdownMenuItem(
-                          value: 'idea',
-                          child: Text('Idea'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'link',
-                          child: Text('Link'),
-                        ),
+                        DropdownMenuItem(value: 'idea', child: Text('Idea')),
+                        DropdownMenuItem(value: 'link', child: Text('Link')),
                       ],
                       onChanged: (value) {
                         if (value != null) {
@@ -321,7 +286,8 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
 
                     TextFormField(
                       controller: _tagsController,
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.text,
                       ),
                       decoration: _fieldDecoration(
@@ -343,7 +309,8 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                   children: [
                     TextFormField(
                       controller: _languageController,
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.text,
                       ),
                       decoration: _fieldDecoration(
@@ -384,9 +351,7 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: DevDiaryColors.border,
-                  ),
+                  border: Border.all(color: DevDiaryColors.border),
                 ),
                 child: Row(
                   children: [
@@ -405,7 +370,8 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                     Expanded(
                       child: Text(
                         'Preferita',
-                        style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                        style: TextStyle(
+                          fontFamily: DevDiaryFonts.ui,
                           color: DevDiaryColors.darkPurple,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -448,16 +414,15 @@ class _DiaryFormScreenState extends State<DiaryFormScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Icon(
-                          Icons.save_rounded,
-                        ),
+                      : const Icon(Icons.save_rounded),
                   label: Text(
                     _isSaving
                         ? 'Salvataggio...'
                         : _isEditing
-                            ? 'Salva modifiche'
-                            : 'Salva nota',
-                    style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                        ? 'Salva modifiche'
+                        : 'Salva nota',
+                    style: TextStyle(
+                      fontFamily: DevDiaryFonts.ui,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -490,14 +455,10 @@ class _FormSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: DevDiaryColors.border,
-        ),
+        border: Border.all(color: DevDiaryColors.border),
         boxShadow: [
           BoxShadow(
-            color: DevDiaryColors.purple.withValues(
-              alpha: 0.04,
-            ),
+            color: DevDiaryColors.purple.withValues(alpha: 0.04),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -515,18 +476,15 @@ class _FormSection extends StatelessWidget {
                   color: DevDiaryColors.lightPurple,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: DevDiaryColors.purple,
-                  size: 20,
-                ),
+                child: Icon(icon, color: DevDiaryColors.purple, size: 20),
               ),
 
               const SizedBox(width: 10),
 
               Text(
                 title,
-                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                style: TextStyle(
+                  fontFamily: DevDiaryFonts.ui,
                   color: DevDiaryColors.darkPurple,
                   fontSize: 16,
                   fontWeight: FontWeight.w800,

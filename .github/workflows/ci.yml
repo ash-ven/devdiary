@@ -53,6 +53,9 @@ jobs:
       - name: Analisi
         working-directory: app
         run: flutter analyze
+      - name: Formattazione
+        working-directory: app
+        run: dart format --output=none --set-exit-if-changed .
       - name: Test
         working-directory: app
         run: flutter test
@@ -82,5 +85,7 @@ jobs:
           node-version: 22
       - name: Test dello strumento
         run: node --test tools/contrast/verify-tokens.test.js
+      - name: Token Dart generati allineati a tokens.json
+        run: node tools/contrast/to-dart.js --check
       - name: Token della palette Blu matita e rosa
         run: node tools/contrast/verify-tokens.js

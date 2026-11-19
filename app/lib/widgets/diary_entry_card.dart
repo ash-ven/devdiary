@@ -8,10 +8,7 @@ import '../screens/diary_detail_screen.dart';
 class DiaryEntryCard extends StatelessWidget {
   final DiaryEntry entry;
 
-  const DiaryEntryCard({
-    super.key,
-    required this.entry,
-  });
+  const DiaryEntryCard({super.key, required this.entry});
 
   IconData _iconForType(String type) {
     switch (type) {
@@ -86,29 +83,19 @@ class DiaryEntryCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DiaryDetailScreen(
-                entryId: entry.id,
-              ),
+              builder: (context) => DiaryDetailScreen(entryId: entry.id),
             ),
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: DevDiaryColors.border,
-              width: 1.2,
-            ),
+            border: Border.all(color: DevDiaryColors.border, width: 1.2),
             boxShadow: [
               BoxShadow(
-                color: DevDiaryColors.purple.withValues(
-                  alpha: 0.06,
-                ),
+                color: DevDiaryColors.purple.withValues(alpha: 0.06),
                 blurRadius: 13,
                 offset: const Offset(0, 5),
               ),
@@ -140,7 +127,8 @@ class DiaryEntryCard extends StatelessWidget {
                       entry.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.darkPurple,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -153,7 +141,8 @@ class DiaryEntryCard extends StatelessWidget {
                       metadata,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.purple,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -172,7 +161,8 @@ class DiaryEntryCard extends StatelessWidget {
                         const SizedBox(width: 5),
                         Text(
                           _formatDate(entry.updatedAt),
-                          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                          style: TextStyle(
+                            fontFamily: DevDiaryFonts.ui,
                             color: DevDiaryColors.secondaryText,
                             fontSize: 11,
                             fontWeight: FontWeight.w500,

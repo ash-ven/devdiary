@@ -13,10 +13,7 @@ import 'diary_form_screen.dart';
 class DiaryListScreen extends StatefulWidget {
   final bool initialOnlyFavorites;
 
-  const DiaryListScreen({
-    super.key,
-    this.initialOnlyFavorites = false,
-  });
+  const DiaryListScreen({super.key, this.initialOnlyFavorites = false});
 
   @override
   State<DiaryListScreen> createState() => _DiaryListScreenState();
@@ -77,7 +74,9 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare le note';
+        _errorMessage = e is ApiException
+            ? e.message
+            : 'Impossibile caricare le note';
         _isLoading = false;
       });
 
@@ -88,10 +87,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
   void _onSearchChanged(String value) {
     _searchDebounce?.cancel();
 
-    _searchDebounce = Timer(
-      const Duration(milliseconds: 500),
-      _loadEntries,
-    );
+    _searchDebounce = Timer(const Duration(milliseconds: 500), _loadEntries);
 
     setState(() {});
   }
@@ -99,9 +95,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
   Future<void> _openCreateForm() async {
     final created = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const DiaryFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const DiaryFormScreen()),
     );
 
     if (created == true) {
@@ -159,25 +153,17 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
     }
   }
 
-  Widget _buildFilterButton({
-    required String label,
-    required String value,
-  }) {
+  Widget _buildFilterButton({required String label, required String value}) {
     final selected = _selectedType == value;
 
     return Material(
-      color: selected
-          ? DevDiaryColors.purple
-          : Colors.white,
+      color: selected ? DevDiaryColors.purple : Colors.white,
       borderRadius: BorderRadius.circular(13),
       child: InkWell(
         borderRadius: BorderRadius.circular(13),
         onTap: () => _selectType(value),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 15,
-            vertical: 10,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
             border: Border.all(
@@ -193,17 +179,14 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
               Icon(
                 _filterIcon(value),
                 size: 18,
-                color: selected
-                    ? Colors.white
-                    : DevDiaryColors.purple,
+                color: selected ? Colors.white : DevDiaryColors.purple,
               ),
               const SizedBox(width: 7),
               Text(
                 label,
-                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
-                  color: selected
-                      ? Colors.white
-                      : DevDiaryColors.purple,
+                style: TextStyle(
+                  fontFamily: DevDiaryFonts.ui,
+                  color: selected ? Colors.white : DevDiaryColors.purple,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
@@ -224,27 +207,20 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
         color: DevDiaryColors.purple,
         onRefresh: _loadEntries,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            30,
-            8,
-            30,
-            100,
-          ),
+          padding: const EdgeInsets.fromLTRB(30, 8, 30, 100),
           children: [
             Container(
               height: 58,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: DevDiaryColors.purple,
-                  width: 1.3,
-                ),
+                border: Border.all(color: DevDiaryColors.purple, width: 1.3),
               ),
               child: TextField(
                 controller: _searchController,
                 onChanged: _onSearchChanged,
-                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                style: TextStyle(
+                  fontFamily: DevDiaryFonts.ui,
                   color: DevDiaryColors.text,
                   fontSize: 15,
                 ),
@@ -252,7 +228,8 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                   hintText: widget.initialOnlyFavorites
                       ? 'Cerca nei preferiti...'
                       : 'Cerca...',
-                  hintStyle: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                  hintStyle: TextStyle(
+                    fontFamily: DevDiaryFonts.ui,
                     color: DevDiaryColors.secondaryText,
                   ),
                   border: InputBorder.none,
@@ -280,9 +257,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                           Icons.tune_rounded,
                           color: DevDiaryColors.purple,
                         ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 18),
                 ),
               ),
             ),
@@ -293,35 +268,17 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildFilterButton(
-                    label: 'Tutti',
-                    value: 'all',
-                  ),
+                  _buildFilterButton(label: 'Tutti', value: 'all'),
                   const SizedBox(width: 10),
-                  _buildFilterButton(
-                    label: 'Note',
-                    value: 'note',
-                  ),
+                  _buildFilterButton(label: 'Note', value: 'note'),
                   const SizedBox(width: 10),
-                  _buildFilterButton(
-                    label: 'Snippet',
-                    value: 'snippet',
-                  ),
+                  _buildFilterButton(label: 'Snippet', value: 'snippet'),
                   const SizedBox(width: 10),
-                  _buildFilterButton(
-                    label: 'Idee',
-                    value: 'idea',
-                  ),
+                  _buildFilterButton(label: 'Idee', value: 'idea'),
                   const SizedBox(width: 10),
-                  _buildFilterButton(
-                    label: 'Errori',
-                    value: 'errore',
-                  ),
+                  _buildFilterButton(label: 'Errori', value: 'errore'),
                   const SizedBox(width: 10),
-                  _buildFilterButton(
-                    label: 'Link',
-                    value: 'link',
-                  ),
+                  _buildFilterButton(label: 'Link', value: 'link'),
                 ],
               ),
             ),
@@ -331,10 +288,9 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
             Row(
               children: [
                 Text(
-                  widget.initialOnlyFavorites
-                      ? 'Preferiti'
-                      : 'Solo preferiti',
-                  style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                  widget.initialOnlyFavorites ? 'Preferiti' : 'Solo preferiti',
+                  style: TextStyle(
+                    fontFamily: DevDiaryFonts.ui,
                     color: DevDiaryColors.darkPurple,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
@@ -363,13 +319,11 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                   foregroundColor: DevDiaryColors.purple,
                   padding: EdgeInsets.zero,
                 ),
-                icon: const Icon(
-                  Icons.refresh_rounded,
-                  size: 23,
-                ),
+                icon: const Icon(Icons.refresh_rounded, size: 23),
                 label: Text(
                   'Azzera filtri',
-                  style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                  style: TextStyle(
+                    fontFamily: DevDiaryFonts.ui,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -390,14 +344,13 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
               )
             else if (_errorMessage != null)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 50,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 50),
                 child: Column(
                   children: [
                     Text(
                       _errorMessage!,
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.secondaryText,
                       ),
                     ),
@@ -427,7 +380,8 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                         widget.initialOnlyFavorites
                             ? 'Nessuna nota preferita'
                             : 'Nessun risultato',
-                        style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                        style: TextStyle(
+                          fontFamily: DevDiaryFonts.ui,
                           color: DevDiaryColors.secondaryText,
                           fontWeight: FontWeight.w600,
                         ),
@@ -439,12 +393,8 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
             else
               ..._entries.map(
                 (entry) => Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 14,
-                  ),
-                  child: DiaryEntryCard(
-                    entry: entry,
-                  ),
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: DiaryEntryCard(entry: entry),
                 ),
               ),
           ],
@@ -453,10 +403,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: _openCreateForm,
-        child: const Icon(
-          Icons.add_rounded,
-          size: 32,
-        ),
+        child: const Icon(Icons.add_rounded, size: 32),
       ),
     );
   }

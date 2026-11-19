@@ -45,7 +45,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare la dashboard';
+        _errorMessage = e is ApiException
+            ? e.message
+            : 'Impossibile caricare la dashboard';
         _isLoading = false;
       });
     }
@@ -56,8 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int get _snippetCount =>
       _entries.where((entry) => entry.type == 'snippet').length;
 
-  int get _favoriteCount =>
-      _entries.where((entry) => entry.isFavorite).length;
+  int get _favoriteCount => _entries.where((entry) => entry.isFavorite).length;
 
   int get _errorCount =>
       _entries.where((entry) => entry.type == 'errore').length;
@@ -72,9 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final sorted = counts.entries.toList()
-      ..sort(
-        (a, b) => b.value.compareTo(a.value),
-      );
+      ..sort((a, b) => b.value.compareTo(a.value));
 
     return sorted.take(5).toList();
   }
@@ -90,7 +89,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           'Dashboard',
-          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+          style: TextStyle(
+            fontFamily: DevDiaryFonts.ui,
             color: DevDiaryColors.darkPurple,
             fontWeight: FontWeight.w800,
           ),
@@ -103,9 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: DevDiaryColors.purple,
-        ),
+        child: CircularProgressIndicator(color: DevDiaryColors.purple),
       );
     }
 
@@ -122,16 +120,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 14),
             Text(
               _errorMessage!,
-              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+              style: TextStyle(
+                fontFamily: DevDiaryFonts.ui,
                 color: DevDiaryColors.secondaryText,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _loadEntries,
-              child: const Text('Riprova'),
-            ),
+            FilledButton(onPressed: _loadEntries, child: const Text('Riprova')),
           ],
         ),
       );
@@ -141,16 +137,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       color: DevDiaryColors.purple,
       onRefresh: _loadEntries,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          28,
-          18,
-          28,
-          40,
-        ),
+        padding: const EdgeInsets.fromLTRB(28, 18, 28, 40),
         children: [
           Text(
             'Riepilogo',
-            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+            style: TextStyle(
+              fontFamily: DevDiaryFonts.ui,
               color: DevDiaryColors.darkPurple,
               fontSize: 28,
               fontWeight: FontWeight.w800,
@@ -194,7 +186,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           Text(
             'Top tag',
-            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+            style: TextStyle(
+              fontFamily: DevDiaryFonts.ui,
               color: DevDiaryColors.darkPurple,
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -210,13 +203,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: DevDiaryColors.border,
-                ),
+                border: Border.all(color: DevDiaryColors.border),
               ),
               child: Text(
                 'Nessun tag disponibile',
-                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                style: TextStyle(
+                  fontFamily: DevDiaryFonts.ui,
                   color: DevDiaryColors.secondaryText,
                 ),
               ),
@@ -228,14 +220,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: DevDiaryColors.border,
-                ),
+                border: Border.all(color: DevDiaryColors.border),
                 boxShadow: [
                   BoxShadow(
-                    color: DevDiaryColors.purple.withValues(
-                      alpha: 0.05,
-                    ),
+                    color: DevDiaryColors.purple.withValues(alpha: 0.05),
                     blurRadius: 14,
                     offset: const Offset(0, 5),
                   ),
@@ -244,57 +232,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children: _topTags.map(
-                  (tag) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: DevDiaryColors.lightBlue,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.tag_rounded,
-                            size: 16,
+                children: _topTags.map((tag) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: DevDiaryColors.lightBlue,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.tag_rounded,
+                          size: 16,
+                          color: DevDiaryColors.purple,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          tag.key,
+                          style: TextStyle(
+                            fontFamily: DevDiaryFonts.ui,
                             color: DevDiaryColors.purple,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            tag.key,
-                            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
-                              color: DevDiaryColors.purple,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 24,
+                          height: 24,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: DevDiaryColors.lightPurple,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            tag.value.toString(),
+                            style: TextStyle(
+                              fontFamily: DevDiaryFonts.ui,
+                              color: DevDiaryColors.darkPurple,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 24,
-                            height: 24,
-                            alignment: Alignment.center,
-                            decoration: const BoxDecoration(
-                              color: DevDiaryColors.lightPurple,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              tag.value.toString(),
-                              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
-                                color: DevDiaryColors.darkPurple,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ).toList(),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
             ),
         ],
@@ -324,14 +312,10 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: DevDiaryColors.border,
-        ),
+        border: Border.all(color: DevDiaryColors.border),
         boxShadow: [
           BoxShadow(
-            color: DevDiaryColors.purple.withValues(
-              alpha: 0.05,
-            ),
+            color: DevDiaryColors.purple.withValues(alpha: 0.05),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -344,23 +328,18 @@ class _StatCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: accentColor.withValues(
-                alpha: 0.12,
-              ),
+              color: accentColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              icon,
-              color: accentColor,
-              size: 25,
-            ),
+            child: Icon(icon, color: accentColor, size: 25),
           ),
 
           const SizedBox(height: 18),
 
           Text(
             value.toString(),
-            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+            style: TextStyle(
+              fontFamily: DevDiaryFonts.ui,
               color: DevDiaryColors.darkPurple,
               fontSize: 34,
               fontWeight: FontWeight.w800,
@@ -371,7 +350,8 @@ class _StatCard extends StatelessWidget {
 
           Text(
             title,
-            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+            style: TextStyle(
+              fontFamily: DevDiaryFonts.ui,
               color: DevDiaryColors.secondaryText,
               fontSize: 13,
               fontWeight: FontWeight.w600,

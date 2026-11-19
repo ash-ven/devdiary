@@ -1,0 +1,21 @@
+{
+  "@@locale": "it",
+  "appTitle": "DevDiary",
+  "navDiary": "Diario",
+  "navFavorites": "Preferiti",
+  "navDashboard": "Dashboard",
+  "navTrash": "Cestino",
+  "navSettings": "Impostazioni",
+  "emptyDiary": "Non ci sono ancora note.",
+  "emptyFavorites": "Nessun preferito.",
+  "emptyTrash": "Il cestino è vuoto.",
+  "errorSampleReadOnly": "Questa nota di esempio non si può modificare.",
+  "errorDemoLimit": "Hai raggiunto il limite della demo.",
+  "errorVisitorRequired": "Non riconosco il visitatore. Ricarica la pagina.",
+  "errorNotFound": "Non trovo questa nota.",
+  "errorDatabase": "Problema con il database. Riprova tra poco.",
+  "errorTimeout": "Il server ci mette troppo. Riprova.",
+  "errorNetwork": "Non riesco a collegarmi. Controlla la connessione.",
+  "errorFieldInvalid": "Controlla i campi evidenziati.",
+  "errorInternal": "Qualcosa è andato storto. Riprova."
+}

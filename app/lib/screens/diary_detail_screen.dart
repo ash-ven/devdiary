@@ -10,10 +10,7 @@ import 'diary_form_screen.dart';
 class DiaryDetailScreen extends StatefulWidget {
   final String entryId;
 
-  const DiaryDetailScreen({
-    super.key,
-    required this.entryId,
-  });
+  const DiaryDetailScreen({super.key, required this.entryId});
 
   @override
   State<DiaryDetailScreen> createState() => _DiaryDetailScreenState();
@@ -52,7 +49,9 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare la nota';
+        _errorMessage = e is ApiException
+            ? e.message
+            : 'Impossibile caricare la nota';
         _isLoading = false;
       });
 
@@ -65,11 +64,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
     final updated = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (context) => DiaryFormScreen(
-          entry: _entry!,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => DiaryFormScreen(entry: _entry!)),
     );
 
     if (updated == true) {
@@ -90,7 +85,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
           ),
           title: Text(
             'Eliminare la nota?',
-            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+            style: TextStyle(
+              fontFamily: DevDiaryFonts.ui,
               color: DevDiaryColors.darkPurple,
               fontWeight: FontWeight.w800,
             ),
@@ -98,7 +94,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
           content: Text(
             'Vuoi davvero eliminare "${_entry!.title}"? '
             'Questa operazione non può essere annullata.',
-            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+            style: TextStyle(
+              fontFamily: DevDiaryFonts.ui,
               color: DevDiaryColors.secondaryText,
               height: 1.45,
             ),
@@ -110,7 +107,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
               },
               child: Text(
                 'Annulla',
-                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                style: TextStyle(
+                  fontFamily: DevDiaryFonts.ui,
                   color: DevDiaryColors.purple,
                   fontWeight: FontWeight.w700,
                 ),
@@ -152,11 +150,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Errore durante l\'eliminazione: $e',
-          ),
-        ),
+        SnackBar(content: Text('Errore durante l\'eliminazione: $e')),
       );
     }
   }
@@ -230,7 +224,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           'Dettaglio',
-          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+          style: TextStyle(
+            fontFamily: DevDiaryFonts.ui,
             color: DevDiaryColors.darkPurple,
             fontWeight: FontWeight.w800,
           ),
@@ -264,9 +259,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: DevDiaryColors.purple,
-        ),
+        child: CircularProgressIndicator(color: DevDiaryColors.purple),
       );
     }
 
@@ -283,16 +276,14 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             const SizedBox(height: 14),
             Text(
               _errorMessage!,
-              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+              style: TextStyle(
+                fontFamily: DevDiaryFonts.ui,
                 color: DevDiaryColors.secondaryText,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _loadEntry,
-              child: const Text('Riprova'),
-            ),
+            FilledButton(onPressed: _loadEntry, child: const Text('Riprova')),
           ],
         ),
       );
@@ -302,7 +293,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       return Center(
         child: Text(
           'Nota non trovata',
-          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+          style: TextStyle(
+            fontFamily: DevDiaryFonts.ui,
             color: DevDiaryColors.secondaryText,
           ),
         ),
@@ -312,12 +304,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
     final entry = _entry!;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(
-        28,
-        20,
-        28,
-        40,
-      ),
+      padding: const EdgeInsets.fromLTRB(28, 20, 28, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -346,7 +333,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                   children: [
                     Text(
                       entry.title,
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.darkPurple,
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
@@ -358,7 +346,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
                     Text(
                       _labelForType(entry.type),
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                      style: TextStyle(
+                        fontFamily: DevDiaryFonts.ui,
                         color: DevDiaryColors.purple,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -388,28 +377,27 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: entry.tags.map(
-                (tag) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 7,
+              children: entry.tags.map((tag) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: DevDiaryColors.lightPurple,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '#$tag',
+                    style: TextStyle(
+                      fontFamily: DevDiaryFonts.ui,
+                      color: DevDiaryColors.purple,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
-                    decoration: BoxDecoration(
-                      color: DevDiaryColors.lightPurple,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '#$tag',
-                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
-                        color: DevDiaryColors.purple,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  );
-                },
-              ).toList(),
+                  ),
+                );
+              }).toList(),
             ),
           ],
 
@@ -420,7 +408,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             icon: Icons.notes_rounded,
             child: Text(
               entry.content,
-              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+              style: TextStyle(
+                fontFamily: DevDiaryFonts.ui,
                 color: DevDiaryColors.text,
                 fontSize: 16,
                 height: 1.6,
@@ -428,8 +417,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             ),
           ),
 
-          if (entry.language != null &&
-              entry.language!.isNotEmpty) ...[
+          if (entry.language != null && entry.language!.isNotEmpty) ...[
             const SizedBox(height: 18),
 
             _SectionCard(
@@ -437,7 +425,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
               icon: Icons.translate_rounded,
               child: Text(
                 entry.language!,
-                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                style: TextStyle(
+                  fontFamily: DevDiaryFonts.ui,
                   color: DevDiaryColors.purple,
                   fontWeight: FontWeight.w700,
                 ),
@@ -445,8 +434,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             ),
           ],
 
-          if (entry.code != null &&
-              entry.code!.isNotEmpty) ...[
+          if (entry.code != null && entry.code!.isNotEmpty) ...[
             const SizedBox(height: 18),
 
             _SectionCard(
@@ -480,9 +468,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             decoration: BoxDecoration(
               color: DevDiaryColors.lightBlue,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: DevDiaryColors.border,
-              ),
+              border: Border.all(color: DevDiaryColors.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -505,9 +491,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
           if (_isDeleting) ...[
             const SizedBox(height: 24),
             const Center(
-              child: CircularProgressIndicator(
-                color: DevDiaryColors.pink,
-              ),
+              child: CircularProgressIndicator(color: DevDiaryColors.pink),
             ),
           ],
         ],
@@ -535,14 +519,10 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: DevDiaryColors.border,
-        ),
+        border: Border.all(color: DevDiaryColors.border),
         boxShadow: [
           BoxShadow(
-            color: DevDiaryColors.purple.withValues(
-              alpha: 0.05,
-            ),
+            color: DevDiaryColors.purple.withValues(alpha: 0.05),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -553,15 +533,12 @@ class _SectionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: DevDiaryColors.purple,
-                size: 20,
-              ),
+              Icon(icon, color: DevDiaryColors.purple, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+                style: TextStyle(
+                  fontFamily: DevDiaryFonts.ui,
                   color: DevDiaryColors.darkPurple,
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
@@ -592,15 +569,12 @@ class _DateRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: DevDiaryColors.purple,
-          size: 18,
-        ),
+        Icon(icon, color: DevDiaryColors.purple, size: 18),
         const SizedBox(width: 8),
         Text(
           '$label:',
-          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+          style: TextStyle(
+            fontFamily: DevDiaryFonts.ui,
             color: DevDiaryColors.darkPurple,
             fontWeight: FontWeight.w700,
           ),
@@ -609,7 +583,8 @@ class _DateRow extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+            style: TextStyle(
+              fontFamily: DevDiaryFonts.ui,
               color: DevDiaryColors.secondaryText,
               fontSize: 13,
             ),

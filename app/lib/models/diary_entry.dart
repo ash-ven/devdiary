@@ -29,9 +29,7 @@ class DiaryEntry {
     final dynamic rawTags = json['tags'];
 
     if (rawTags is List) {
-      parsedTags = rawTags
-          .map((tag) => tag.toString())
-          .toList();
+      parsedTags = rawTags.map((tag) => tag.toString()).toList();
     } else if (rawTags is String) {
       parsedTags = rawTags
           .split(',')

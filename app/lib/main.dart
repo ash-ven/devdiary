@@ -66,8 +66,7 @@ class DevDiaryApp extends StatelessWidget {
           ),
         ),
 
-        floatingActionButtonTheme:
-            const FloatingActionButtonThemeData(
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: DevDiaryColors.pink,
           foregroundColor: Colors.white,
           elevation: 5,
@@ -75,18 +74,14 @@ class DevDiaryApp extends StatelessWidget {
         ),
 
         switchTheme: SwitchThemeData(
-          thumbColor: WidgetStateProperty.resolveWith(
-            (states) => Colors.white,
-          ),
-          trackColor: WidgetStateProperty.resolveWith(
-            (states) {
-              if (states.contains(WidgetState.selected)) {
-                return DevDiaryColors.purple;
-              }
+          thumbColor: WidgetStateProperty.resolveWith((states) => Colors.white),
+          trackColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return DevDiaryColors.purple;
+            }
 
-              return const Color(0xFFE3E3EB);
-            },
-          ),
+            return const Color(0xFFE3E3EB);
+          }),
         ),
       ),
 
@@ -108,9 +103,7 @@ class _DevDiaryHomeState extends State<DevDiaryHome> {
   void _openDashboard() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const DashboardScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const DashboardScreen()),
     );
   }
 
@@ -161,9 +154,7 @@ class _DevDiaryHomeState extends State<DevDiaryHome> {
                       key: ValueKey('favorites'),
                       initialOnlyFavorites: true,
                     )
-                  : const DiaryListScreen(
-                      key: ValueKey('home'),
-                    ),
+                  : const DiaryListScreen(key: ValueKey('home')),
             ),
           ],
         ),
@@ -172,11 +163,7 @@ class _DevDiaryHomeState extends State<DevDiaryHome> {
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(
-              color: DevDiaryColors.border,
-            ),
-          ),
+          border: Border(top: BorderSide(color: DevDiaryColors.border)),
         ),
         child: SafeArea(
           top: false,
@@ -233,11 +220,7 @@ class _DevDiaryHeader extends StatelessWidget {
       width: double.infinity,
       child: Stack(
         children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _WavePainter(),
-            ),
-          ),
+          Positioned.fill(child: CustomPaint(painter: _WavePainter())),
 
           const Positioned(
             top: 24,
@@ -290,10 +273,8 @@ class _DevDiaryHeader extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(18),
                 onTap: () {
-                  final state =
-                      context.findAncestorStateOfType<
-                          _DevDiaryHomeState
-                      >();
+                  final state = context
+                      .findAncestorStateOfType<_DevDiaryHomeState>();
 
                   state?._openDashboard();
                 },
@@ -319,16 +300,12 @@ class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bluePaint = Paint()
-      ..color = DevDiaryColors.blue.withValues(
-        alpha: 0.42,
-      )
+      ..color = DevDiaryColors.blue.withValues(alpha: 0.42)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
     final purplePaint = Paint()
-      ..color = DevDiaryColors.purple.withValues(
-        alpha: 0.10,
-      )
+      ..color = DevDiaryColors.purple.withValues(alpha: 0.10)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8;
 
@@ -357,59 +334,24 @@ class _WavePainter extends CustomPainter {
         40,
       );
 
-    canvas.drawPath(
-      secondLeftWave,
-      bluePaint,
-    );
+    canvas.drawPath(secondLeftWave, bluePaint);
 
     final rightWave = Path()
-      ..moveTo(
-        size.width * 0.60,
-        32,
-      )
-      ..cubicTo(
-        size.width * 0.73,
-        18,
-        size.width * 0.82,
-        105,
-        size.width,
-        66,
-      );
+      ..moveTo(size.width * 0.60, 32)
+      ..cubicTo(size.width * 0.73, 18, size.width * 0.82, 105, size.width, 66);
 
-    canvas.drawPath(
-      rightWave,
-      purplePaint,
-    );
-    canvas.drawPath(
-      rightWave,
-      bluePaint,
-    );
+    canvas.drawPath(rightWave, purplePaint);
+    canvas.drawPath(rightWave, bluePaint);
 
     final secondRightWave = Path()
-      ..moveTo(
-        size.width * 0.64,
-        44,
-      )
-      ..cubicTo(
-        size.width * 0.77,
-        32,
-        size.width * 0.88,
-        116,
-        size.width,
-        78,
-      );
+      ..moveTo(size.width * 0.64, 44)
+      ..cubicTo(size.width * 0.77, 32, size.width * 0.88, 116, size.width, 78);
 
-    canvas.drawPath(
-      secondRightWave,
-      bluePaint,
-    );
+    canvas.drawPath(secondRightWave, bluePaint);
   }
 
   @override
-  bool shouldRepaint(
-    covariant CustomPainter oldDelegate,
-  ) =>
-      false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _BottomItem extends StatelessWidget {
@@ -436,25 +378,19 @@ class _BottomItem extends StatelessWidget {
       child: SizedBox(
         width: 90,
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 26,
-            ),
+            Icon(icon, color: color, size: 26),
 
             const SizedBox(height: 3),
 
             Text(
               label,
-              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
+              style: TextStyle(
+                fontFamily: DevDiaryFonts.ui,
                 color: color,
                 fontSize: 11,
-                fontWeight: selected
-                    ? FontWeight.w800
-                    : FontWeight.w600,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
 
@@ -464,10 +400,8 @@ class _BottomItem extends StatelessWidget {
               Container(
                 width: 7,
                 height: 7,
-                decoration:
-                    const BoxDecoration(
-                  color:
-                      DevDiaryColors.purple,
+                decoration: const BoxDecoration(
+                  color: DevDiaryColors.purple,
                   shape: BoxShape.circle,
                 ),
               ),
