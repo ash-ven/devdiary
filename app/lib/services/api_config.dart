@@ -9,5 +9,8 @@ String normalizeBaseUrl(String raw) {
 }
 
 final String apiBaseUrl = normalizeBaseUrl(
-  const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:5678/webhook'),
+  const String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:5678/webhook',
+  ),
 );

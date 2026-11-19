@@ -22,3 +22,8 @@ test('a weaker grey fails with the name of the pair', () => {
   assert.equal(r.status, 1);
   assert.match(r.stdout + r.stderr, /Date e conteggi sul foglio/);
 });
+
+test('the generated Dart tokens match tokens.json', () => {
+  const r = spawnSync(process.execPath, [path.join(__dirname, 'to-dart.js'), '--check'], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});

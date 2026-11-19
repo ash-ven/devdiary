@@ -1,11 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
   <title>DevDiary</title>
-  <defs>
-    <clipPath id="foglio"><rect width="16" height="16" rx="3.5"/></clipPath>
-  </defs>
-  <rect width="16" height="16" rx="3.5" fill="#2445A8"/>
-  <rect x="4" width="2" height="16" fill="#FF2E83" clip-path="url(#foglio)"/>
-  <rect x="8" y="4" width="5" height="2" rx="1" fill="#F7F8FC"/>
-  <rect x="10" y="7" width="4" height="2" rx="1" fill="#C9B8FF"/>
-  <rect x="8" y="10" width="3" height="2" rx="1" fill="#F7F8FC"/>
+  <path d="M24 40 L30 8 L52 28 Q64 24 76 28 L98 8 L104 40 Q114 62 110 88 Q104 122 64 122 Q24 122 18 88 Q14 62 24 40Z" fill="#2445A8"/>
+  <circle cx="45" cy="56" r="19" fill="#F7F8FC"/>
+  <circle cx="83" cy="56" r="19" fill="#F7F8FC"/>
+  <circle cx="47" cy="58" r="10" fill="#14213D"/>
+  <circle cx="81" cy="58" r="10" fill="#14213D"/>
+  <path d="M55 78 L73 78 L64 92Z" fill="#FF2E83"/>
 </svg>

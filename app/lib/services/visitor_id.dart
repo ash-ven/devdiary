@@ -2,7 +2,9 @@ import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-final _uuidV4 = RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$');
+final _uuidV4 = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+);
 
 /// UUID versione 4, casuale: identifica in modo anonimo il browser nella demo.
 String generateVisitorId([Random? random]) {
@@ -17,7 +19,8 @@ String generateVisitorId([Random? random]) {
 /// Conserva l'identificativo nel browser (localStorage). Se lo storage non è disponibile,
 /// usa un valore in memoria che resta uguale per tutta la sessione.
 class VisitorStore {
-  VisitorStore({Future<SharedPreferences> Function()? prefs}) : _prefs = prefs ?? SharedPreferences.getInstance;
+  VisitorStore({Future<SharedPreferences> Function()? prefs})
+    : _prefs = prefs ?? SharedPreferences.getInstance;
 
   static const key = 'devdiary.visitorId';
   static String? _memory;

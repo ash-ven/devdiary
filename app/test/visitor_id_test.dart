@@ -8,7 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final uuidV4 = RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$');
+final uuidV4 = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+);
 
 void main() {
   test('generates uuid v4', () {
@@ -25,7 +27,10 @@ void main() {
     final second = await VisitorStore().load();
     expect(uuidV4.hasMatch(first), isTrue);
     expect(second, first);
-    expect((await SharedPreferences.getInstance()).getString(VisitorStore.key), first);
+    expect(
+      (await SharedPreferences.getInstance()).getString(VisitorStore.key),
+      first,
+    );
   });
 
   test('replaces a malformed stored id', () async {
@@ -35,7 +40,9 @@ void main() {
   });
 
   test('falls back to memory when storage fails', () async {
-    final store = VisitorStore(prefs: () async => throw Exception('archiviazione bloccata'));
+    final store = VisitorStore(
+      prefs: () async => throw Exception('archiviazione bloccata'),
+    );
     final first = await store.load();
     final second = await store.load();
     expect(uuidV4.hasMatch(first), isTrue);
@@ -50,13 +57,25 @@ void main() {
       visitorId: visitor,
       client: MockClient((req) async {
         seen.add(req.headers['X-Demo-Visitor']);
-        final body = req.method == 'GET' ? '[]' : '{"success":true}';
-        return http.Response(body, req.method == 'POST' ? 201 : 200, headers: {'content-type': 'application/json'});
+        final body = req.method == 'GET'
+            ? '[]'
+            : '{"success":true,"_id":"6afeb4a37ab5376904d214ad"}';
+        return http.Response(
+          body,
+          req.method == 'POST' ? 201 : 200,
+          headers: {'content-type': 'application/json'},
+        );
       }),
     );
     final entry = DiaryEntry(
-      id: '6afeb4a37ab5376904d214ad', title: 'T', content: 'C', type: 'note', tags: const [],
-      isFavorite: false, createdAt: '', updatedAt: '',
+      id: '6afeb4a37ab5376904d214ad',
+      title: 'T',
+      content: 'C',
+      type: 'note',
+      tags: const [],
+      isFavorite: false,
+      createdAt: '',
+      updatedAt: '',
     );
     await service.getEntries();
     await service.createEntry(entry);
@@ -69,6 +88,9 @@ void main() {
   test('uses the default visitor id', () {
     DiaryApiService.defaultVisitorId = 'abc';
     addTearDown(() => DiaryApiService.defaultVisitorId = null);
-    expect(DiaryApiService(baseUrl: 'https://a.example/webhook').visitorId, 'abc');
+    expect(
+      DiaryApiService(baseUrl: 'https://a.example/webhook').visitorId,
+      'abc',
+    );
   });
 }
