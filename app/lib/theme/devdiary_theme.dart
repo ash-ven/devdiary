@@ -6,7 +6,7 @@ import 'tokens.g.dart';
 /// Stile del codice: JetBrains Mono, legature disattivate.
 const devDiaryCodeStyle = TextStyle(
   fontFamily: DevDiaryFonts.code,
-  fontFeatures: [FontFeature.disable('liga')],
+  fontFeatures: [FontFeature.disable('liga'), FontFeature.disable('calt')],
 );
 
 /// Tema chiaro o scuro costruito dai token generati.

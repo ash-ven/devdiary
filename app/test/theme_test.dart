@@ -21,9 +21,9 @@ void main() {
 
   test('code font has ligatures off', () {
     expect(devDiaryCodeStyle.fontFamily, 'JetBrainsMono');
-    expect(
-      devDiaryCodeStyle.fontFeatures,
-      contains(FontFeature.disable('liga')),
-    );
+    expect(devDiaryCodeStyle.fontFeatures, [
+      const FontFeature.disable('liga'),
+      const FontFeature.disable('calt'),
+    ]);
   });
 }
