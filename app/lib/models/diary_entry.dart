@@ -7,6 +7,8 @@ class DiaryEntry {
   final String? code;
   final List<String> tags;
   final bool isFavorite;
+  final bool isSample;
+  final String? deletedAt;
   final String createdAt;
   final String updatedAt;
 
@@ -19,6 +21,8 @@ class DiaryEntry {
     this.code,
     required this.tags,
     required this.isFavorite,
+    this.isSample = false,
+    this.deletedAt,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -47,6 +51,8 @@ class DiaryEntry {
       code: json['code']?.toString(),
       tags: parsedTags,
       isFavorite: json['isFavorite'] == true,
+      isSample: json['isSample'] == true,
+      deletedAt: json['deletedAt']?.toString(),
       createdAt: json['createdAt']?.toString() ?? '',
       updatedAt: json['updatedAt']?.toString() ?? '',
     );

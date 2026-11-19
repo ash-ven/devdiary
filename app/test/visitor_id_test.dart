@@ -57,7 +57,9 @@ void main() {
       visitorId: visitor,
       client: MockClient((req) async {
         seen.add(req.headers['X-Demo-Visitor']);
-        final body = req.method == 'GET' ? '[]' : '{"success":true}';
+        final body = req.method == 'GET'
+            ? '[]'
+            : '{"success":true,"_id":"6afeb4a37ab5376904d214ad"}';
         return http.Response(
           body,
           req.method == 'POST' ? 201 : 200,
