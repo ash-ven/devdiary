@@ -118,7 +118,74 @@ const contratto = [
   request('DELETE pulizia nota Unicode', 'DELETE', '{{baseUrl}}/diary?id={{unicodeId}}', { tests: [status(200)] }),
 ];
 
-const demo = [];
+const as = (visitor) => [{ key: 'X-Demo-Visitor', value: `{{${visitor}}}` }];
+const sampleBody = { title: 'Prova di modifica', content: 'Non deve funzionare', type: 'note' };
+const nextRequest = (name) => `if (pm.execution && typeof pm.execution.setNextRequest === 'function') pm.execution.setNextRequest(${JSON.stringify(name)}); else postman.setNextRequest(${JSON.stringify(name)});`;
+const LIMIT = 'POST limite per visitatore';
+
+const demo = [
+  request('POST reset', 'POST', '{{baseUrl}}/demo/reset', { headers: resetHeader, tests: [status(200), messageIs('Demo ripristinata')] }),
+  request('GET lista anonima: solo esempi', 'GET', '{{baseUrl}}/diary', {
+    tests: [status(200),
+      T('solo note di esempio', "pm.response.json().forEach(e => pm.expect(e.isSample).to.eql(true));"),
+      T('tutte le note di esempio', "pm.expect(pm.response.json().length).to.eql(Number(pm.collectionVariables.get('seedCount')));"),
+      "pm.collectionVariables.set('sampleId', pm.response.json()[0]._id);"],
+  }),
+  request('POST senza visitatore', 'POST', '{{baseUrl}}/diary', { body: sampleBody, tests: [status(400), ...errorIs('VISITOR_REQUIRED')] }),
+  request('POST visitatore malformato', 'POST', '{{baseUrl}}/diary', {
+    headers: [{ key: 'X-Demo-Visitor', value: 'abc' }], body: sampleBody, tests: [status(400), ...errorIs('VISITOR_REQUIRED')],
+  }),
+  request('POST visitatore troppo lungo', 'POST', '{{baseUrl}}/diary', {
+    pre: ["pm.variables.set('longVisitor', 'a'.repeat(200));"],
+    headers: [{ key: 'X-Demo-Visitor', value: '{{longVisitor}}' }], body: sampleBody, tests: [status(400), ...errorIs('VISITOR_REQUIRED')],
+  }),
+  request('PUT esempio', 'PUT', '{{baseUrl}}/diary?id={{sampleId}}', { headers: as('visitorA'), body: sampleBody, tests: [status(403), ...errorIs('SAMPLE_READ_ONLY')] }),
+  request('DELETE esempio', 'DELETE', '{{baseUrl}}/diary?id={{sampleId}}', { headers: as('visitorA'), tests: [status(403), ...errorIs('SAMPLE_READ_ONLY')] }),
+  request('DELETE definitivo esempio', 'DELETE', '{{baseUrl}}/diary?id={{sampleId}}&permanent=true', { headers: as('visitorA'), tests: [status(403), ...errorIs('SAMPLE_READ_ONLY')] }),
+  request('POST crea nota di A', 'POST', '{{baseUrl}}/diary', {
+    headers: as('visitorA'), body: { title: 'Nota privata di A', content: 'La vede solo A', type: 'idea', tags: ['demo'] },
+    tests: [status(201), "pm.collectionVariables.set('noteA', pm.response.json()._id);"],
+  }),
+  request('GET lista di A', 'GET', '{{baseUrl}}/diary', { headers: as('visitorA'), tests: [status(200), listHas('noteA', true)] }),
+  request('GET lista di B', 'GET', '{{baseUrl}}/diary', { headers: as('visitorB'), tests: [status(200), listHas('noteA', false)] }),
+  request('GET dettaglio di A visto da B', 'GET', '{{baseUrl}}/diary/detail?id={{noteA}}', { headers: as('visitorB'), tests: [status(404), ...errorIs('NOT_FOUND')] }),
+  request('PUT nota di A da B', 'PUT', '{{baseUrl}}/diary?id={{noteA}}', { headers: as('visitorB'), body: sampleBody, tests: [status(404), ...errorIs('NOT_FOUND')] }),
+  request('DELETE nota di A da B', 'DELETE', '{{baseUrl}}/diary?id={{noteA}}', { headers: as('visitorB'), tests: [status(404), ...errorIs('NOT_FOUND')] }),
+  request('POST ripristina nota di A da B', 'POST', '{{baseUrl}}/diary/restore?id={{noteA}}', { headers: as('visitorB'), tests: [status(404)] }),
+  request('GET export json di B', 'GET', '{{baseUrl}}/diary/export/json', { headers: as('visitorB'), tests: [status(200), listHas('noteA', false)] }),
+  request('GET export json di A', 'GET', '{{baseUrl}}/diary/export/json', { headers: as('visitorA'), tests: [status(200), listHas('noteA', true)] }),
+  request('GET export markdown di B', 'GET', '{{baseUrl}}/diary/export/markdown', {
+    headers: as('visitorB'), tests: [status(200), T('senza la nota di A', "pm.expect(pm.response.text()).to.not.include('Nota privata di A');")],
+  }),
+  request('GET dettaglio di A', 'GET', '{{baseUrl}}/diary/detail?id={{noteA}}', { headers: as('visitorA'), tests: [status(200)] }),
+  request('PUT nota di A', 'PUT', '{{baseUrl}}/diary?id={{noteA}}', {
+    headers: as('visitorA'), body: { title: 'Nota privata di A, modificata', content: 'Sempre solo di A', type: 'idea' }, tests: [status(200)],
+  }),
+  request('DELETE nota di A nel cestino', 'DELETE', '{{baseUrl}}/diary?id={{noteA}}', { headers: as('visitorA'), tests: [status(200), messageIs('Nota spostata nel cestino')] }),
+  request('GET cestino di A', 'GET', '{{baseUrl}}/diary?trash=true', { headers: as('visitorA'), tests: [status(200), listHas('noteA', true)] }),
+  request('GET cestino di B', 'GET', '{{baseUrl}}/diary?trash=true', { headers: as('visitorB'), tests: [status(200), listHas('noteA', false)] }),
+  request('POST ripristina nota di A', 'POST', '{{baseUrl}}/diary/restore?id={{noteA}}', { headers: as('visitorA'), tests: [status(200), messageIs('Nota ripristinata')] }),
+  request('GET lista di A dopo il ripristino', 'GET', '{{baseUrl}}/diary', { headers: as('visitorA'), tests: [status(200), listHas('noteA', true)] }),
+  request(LIMIT, 'POST', '{{baseUrl}}/diary', {
+    pre: [
+      "if (!pm.collectionVariables.get('visitorC')) { pm.collectionVariables.set('visitorC', pm.variables.replaceIn('{{$guid}}').toLowerCase()); pm.collectionVariables.set('limitCount', '0'); }",
+    ],
+    headers: as('visitorC'),
+    body: { title: 'Nota di riempimento', content: 'Per verificare il limite di 50 note', type: 'note' },
+    tests: [
+      "const n = Number(pm.collectionVariables.get('limitCount') || 0) + 1;",
+      "pm.collectionVariables.set('limitCount', String(n));",
+      "if (n <= 50) {",
+      "  if (pm.response.code !== 201) pm.test('nota ' + n + ' creata', () => pm.response.to.have.status(201));",
+      `  ${nextRequest(LIMIT)}`,
+      "} else {",
+      "  pm.test('le prime 50 note create, la 51a respinta', () => pm.response.to.have.status(429));",
+      "  pm.test('codice DEMO_LIMIT_REACHED', () => pm.expect(pm.response.json().code).to.eql('DEMO_LIMIT_REACHED'));",
+      "  pm.collectionVariables.unset('visitorC');",
+      "}",
+    ],
+  }),
+];
 
 const collection = {
   info: {
