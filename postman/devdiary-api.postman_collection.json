@@ -1,0 +1,1979 @@
+{
+  "info": {
+    "name": "DevDiary API",
+    "description": "Test di contratto dell'API DevDiary (n8n + MongoDB). Cartella Contratto: comportamento della traccia (DEMO_MODE=false). Cartella Demo: regole della demo pubblica (DEMO_MODE=true). File generato da postman/build-collection.js.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const ct = pm.response.headers.get('Content-Type') || '';",
+          "if (ct.includes('json')) pm.test('nessun ownerId nella risposta', () => pm.expect(pm.response.text()).to.not.include('ownerId'));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "seedCount",
+      "value": "21"
+    }
+  ],
+  "item": [
+    {
+      "name": "Contratto",
+      "item": [
+        {
+          "name": "GET status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"stato e database OK\", () => { pm.expect(pm.response.json()).to.eql({ status: 'OK', database: 'OK' }); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/status"
+          }
+        },
+        {
+          "name": "POST reset senza token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice RESET_UNAUTHORIZED\", () => { pm.expect(pm.response.json().code).to.eql(\"RESET_UNAUTHORIZED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/demo/reset"
+          }
+        },
+        {
+          "name": "POST reset con token sbagliato",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice RESET_UNAUTHORIZED\", () => { pm.expect(pm.response.json().code).to.eql(\"RESET_UNAUTHORIZED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Reset-Token",
+                "value": "sbagliato"
+              }
+            ],
+            "url": "{{baseUrl}}/demo/reset"
+          }
+        },
+        {
+          "name": "POST reset",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Demo ripristinata\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Demo ripristinata\"); });",
+                  "pm.test(\"tutte le note di esempio inserite\", () => { pm.expect(pm.response.json().entries).to.eql(Number(pm.collectionVariables.get('seedCount'))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Reset-Token",
+                "value": "{{resetToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/demo/reset"
+          }
+        },
+        {
+          "name": "POST reset se vuoto su database pieno",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Demo già pronta\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Demo già pronta\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Reset-Token",
+                "value": "{{resetToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/demo/reset?ifEmpty=true"
+          }
+        },
+        {
+          "name": "GET lista dopo il reset",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene \\\"Appunti Flutter\\\" di esempio\", () => { const n = pm.response.json().find(e => e.title === 'Appunti Flutter'); pm.expect(n).to.be.an('object'); pm.expect(n.isSample).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary?search=Appunti%20Flutter"
+          }
+        },
+        {
+          "name": "POST crea nota",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('runTag', 'newman' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"messaggio \\\"Nota creata correttamente\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Nota creata correttamente\"); });",
+                  "pm.test(\"_id esadecimale di 24 caratteri\", () => { pm.expect(pm.response.json()._id).to.match(/^[0-9a-f]{24}$/); });",
+                  "pm.collectionVariables.set('noteId', pm.response.json()._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nota {{runTag}}\",\n  \"content\": \"Creata dai test di contratto\",\n  \"type\": \"note\",\n  \"tags\": \"newman, test\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET lista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"array\", () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test(\"ogni _id e esadecimale\", () => { pm.response.json().forEach(e => pm.expect(e._id).to.match(/^[0-9a-f]{24}$/)); });",
+                  "pm.test(\"contiene {{noteId}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteId'))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary?search={{runTag}}"
+          }
+        },
+        {
+          "name": "GET dettaglio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"e la nota richiesta\", () => { pm.expect(pm.response.json()._id).to.eql(pm.collectionVariables.get('noteId')); });",
+                  "pm.collectionVariables.set('noteCreatedAt', pm.response.json().createdAt);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/detail?id={{noteId}}"
+          }
+        },
+        {
+          "name": "PUT modifica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Nota aggiornata correttamente\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Nota aggiornata correttamente\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nota {{runTag}} modificata\",\n  \"content\": \"Contenuto aggiornato\",\n  \"type\": \"idea\",\n  \"tags\": [\n    \"newman\"\n  ],\n  \"isFavorite\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "GET dettaglio dopo la modifica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"modifica salvata\", () => { const n = pm.response.json(); pm.expect(n.title).to.eql('Nota ' + pm.collectionVariables.get('runTag') + ' modificata'); pm.expect(n.type).to.eql('idea'); pm.expect(n.isFavorite).to.eql(true); pm.expect(n.tags).to.eql(['newman']); });",
+                  "pm.test(\"createdAt invariato, updatedAt aggiornato\", () => { const n = pm.response.json(); pm.expect(n.createdAt).to.eql(pm.collectionVariables.get('noteCreatedAt')); pm.expect(n.updatedAt).to.not.eql(n.createdAt); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/detail?id={{noteId}}"
+          }
+        },
+        {
+          "name": "POST Unicode",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('unicodeId', pm.response.json()._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"perché più ✓ {{runTag}}\",\n  \"content\": \"Accenti, emoji ✓ e virgolette “tipografiche”\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET Unicode round-trip",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"titolo identico\", () => { pm.expect(pm.response.json().title).to.eql('perché più ✓ ' + pm.collectionVariables.get('runTag')); });",
+                  "pm.test(\"contenuto identico\", () => { pm.expect(pm.response.json().content).to.eql('Accenti, emoji ✓ e virgolette “tipografiche”'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/detail?id={{unicodeId}}"
+          }
+        },
+        {
+          "name": "POST nota con caratteri speciali",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('specialId', pm.response.json()._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"c++ ([a- {{runTag}}\",\n  \"content\": \"Titolo con caratteri speciali delle espressioni regolari\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET ricerca con caratteri speciali",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene {{specialId}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('specialId'))).to.eql(true); });",
+                  "pm.test(\"ricerca letterale\", () => { pm.response.json().forEach(e => pm.expect((e.title + ' ' + e.content).toLowerCase()).to.include('c++ ([a-')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary?search=c%2B%2B%20(%5Ba-"
+          }
+        },
+        {
+          "name": "DELETE pulizia nota con caratteri speciali",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/diary?id={{specialId}}"
+          }
+        },
+        {
+          "name": "POST corpo array",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice BODY_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"BODY_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "[]"
+            }
+          }
+        },
+        {
+          "name": "POST corpo stringa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice BODY_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"BODY_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "\"x\""
+            }
+          }
+        },
+        {
+          "name": "POST corpo null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice BODY_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"BODY_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "null"
+            }
+          }
+        },
+        {
+          "name": "POST JSON rotto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice BODY_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"BODY_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{broken"
+            }
+          }
+        },
+        {
+          "name": "PUT JSON rotto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice BODY_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"BODY_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{broken"
+            }
+          }
+        },
+        {
+          "name": "PUT corpo null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice BODY_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"BODY_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "null"
+            }
+          }
+        },
+        {
+          "name": "PUT corpo array",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice BODY_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"BODY_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "[]"
+            }
+          }
+        },
+        {
+          "name": "POST campo non testuale",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice FIELD_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"FIELD_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":{\"a\":1},\"content\":\"x\",\"type\":\"note\"}"
+            }
+          }
+        },
+        {
+          "name": "POST titolo troppo lungo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('longTitle', 'a'.repeat(121));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice TITLE_TOO_LONG\", () => { pm.expect(pm.response.json().code).to.eql(\"TITLE_TOO_LONG\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{longTitle}}\",\n  \"content\": \"x\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST senza titolo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice TITLE_REQUIRED\", () => { pm.expect(pm.response.json().code).to.eql(\"TITLE_REQUIRED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Senza titolo\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST senza contenuto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice CONTENT_REQUIRED\", () => { pm.expect(pm.response.json().code).to.eql(\"CONTENT_REQUIRED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senza contenuto\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST tipo non valido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice TYPE_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"TYPE_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tipo sbagliato\",\n  \"content\": \"x\",\n  \"type\": \"bug\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET dettaglio senza id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice ID_REQUIRED\", () => { pm.expect(pm.response.json().code).to.eql(\"ID_REQUIRED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/detail"
+          }
+        },
+        {
+          "name": "GET dettaglio id non valido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice ID_INVALID\", () => { pm.expect(pm.response.json().code).to.eql(\"ID_INVALID\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/detail?id=123"
+          }
+        },
+        {
+          "name": "GET dettaglio inesistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/detail?id=000000000000000000000000"
+          }
+        },
+        {
+          "name": "GET export json",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"array\", () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test(\"contiene {{noteId}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteId'))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/export/json"
+          }
+        },
+        {
+          "name": "GET export markdown",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"testo Markdown\", () => { pm.expect(pm.response.text().startsWith('# DevDiary Export')).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/export/markdown"
+          }
+        },
+        {
+          "name": "DELETE definitivo fuori dal cestino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_IN_TRASH\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_IN_TRASH\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/diary?id={{noteId}}&permanent=true"
+          }
+        },
+        {
+          "name": "DELETE sposta nel cestino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Nota spostata nel cestino\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Nota spostata nel cestino\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/diary?id={{noteId}}"
+          }
+        },
+        {
+          "name": "GET lista senza la nota nel cestino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"non contiene {{noteId}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteId'))).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary?search={{runTag}}"
+          }
+        },
+        {
+          "name": "GET cestino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene {{noteId}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteId'))).to.eql(true); });",
+                  "pm.test(\"deletedAt valorizzato\", () => { const n = pm.response.json().find(e => e._id === pm.collectionVariables.get('noteId')); pm.expect(n.deletedAt).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary?trash=true&search={{runTag}}"
+          }
+        },
+        {
+          "name": "GET dettaglio nota nel cestino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/detail?id={{noteId}}"
+          }
+        },
+        {
+          "name": "GET dettaglio nel cestino con trash",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/detail?id={{noteId}}&trash=true"
+          }
+        },
+        {
+          "name": "GET export json senza cestino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"non contiene {{noteId}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteId'))).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary/export/json"
+          }
+        },
+        {
+          "name": "POST ripristina",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Nota ripristinata\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Nota ripristinata\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/diary/restore?id={{noteId}}"
+          }
+        },
+        {
+          "name": "GET lista dopo il ripristino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene {{noteId}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteId'))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary?search={{runTag}}"
+          }
+        },
+        {
+          "name": "DELETE di nuovo nel cestino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/diary?id={{noteId}}"
+          }
+        },
+        {
+          "name": "DELETE definitivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Nota eliminata\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Nota eliminata\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/diary?id={{noteId}}&permanent=true"
+          }
+        },
+        {
+          "name": "POST ripristina nota eliminata",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/diary/restore?id={{noteId}}"
+          }
+        },
+        {
+          "name": "DELETE pulizia nota Unicode",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/diary?id={{unicodeId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Demo",
+      "item": [
+        {
+          "name": "POST reset",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Demo ripristinata\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Demo ripristinata\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Reset-Token",
+                "value": "{{resetToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/demo/reset"
+          }
+        },
+        {
+          "name": "GET lista anonima: solo esempi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"solo note di esempio\", () => { pm.response.json().forEach(e => pm.expect(e.isSample).to.eql(true)); });",
+                  "pm.test(\"tutte le note di esempio\", () => { pm.expect(pm.response.json().length).to.eql(Number(pm.collectionVariables.get('seedCount'))); });",
+                  "pm.collectionVariables.set('sampleId', pm.response.json()[0]._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/diary"
+          }
+        },
+        {
+          "name": "POST senza visitatore",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice VISITOR_REQUIRED\", () => { pm.expect(pm.response.json().code).to.eql(\"VISITOR_REQUIRED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prova di modifica\",\n  \"content\": \"Non deve funzionare\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST visitatore malformato",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice VISITOR_REQUIRED\", () => { pm.expect(pm.response.json().code).to.eql(\"VISITOR_REQUIRED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "abc"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prova di modifica\",\n  \"content\": \"Non deve funzionare\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST visitatore troppo lungo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('longVisitor', 'a'.repeat(200));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => { pm.response.to.have.status(400); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice VISITOR_REQUIRED\", () => { pm.expect(pm.response.json().code).to.eql(\"VISITOR_REQUIRED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{longVisitor}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prova di modifica\",\n  \"content\": \"Non deve funzionare\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT esempio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice SAMPLE_READ_ONLY\", () => { pm.expect(pm.response.json().code).to.eql(\"SAMPLE_READ_ONLY\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{sampleId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prova di modifica\",\n  \"content\": \"Non deve funzionare\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE esempio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice SAMPLE_READ_ONLY\", () => { pm.expect(pm.response.json().code).to.eql(\"SAMPLE_READ_ONLY\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{sampleId}}"
+          }
+        },
+        {
+          "name": "DELETE definitivo esempio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 403\", () => { pm.response.to.have.status(403); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice SAMPLE_READ_ONLY\", () => { pm.expect(pm.response.json().code).to.eql(\"SAMPLE_READ_ONLY\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{sampleId}}&permanent=true"
+          }
+        },
+        {
+          "name": "POST crea nota di A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('noteA', pm.response.json()._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nota privata di A\",\n  \"content\": \"La vede solo A\",\n  \"type\": \"idea\",\n  \"tags\": [\n    \"demo\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "GET lista di A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene {{noteA}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteA'))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary"
+          }
+        },
+        {
+          "name": "GET lista di B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"non contiene {{noteA}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteA'))).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary"
+          }
+        },
+        {
+          "name": "GET dettaglio di A visto da B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary/detail?id={{noteA}}"
+          }
+        },
+        {
+          "name": "PUT nota di A da B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteA}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prova di modifica\",\n  \"content\": \"Non deve funzionare\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE nota di A da B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteA}}"
+          }
+        },
+        {
+          "name": "GET export json di B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"non contiene {{noteA}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteA'))).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary/export/json"
+          }
+        },
+        {
+          "name": "GET export json di A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene {{noteA}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteA'))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary/export/json"
+          }
+        },
+        {
+          "name": "GET export markdown di B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"senza la nota di A\", () => { pm.expect(pm.response.text()).to.not.include('Nota privata di A'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary/export/markdown"
+          }
+        },
+        {
+          "name": "GET dettaglio di A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary/detail?id={{noteA}}"
+          }
+        },
+        {
+          "name": "PUT nota di A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteA}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nota privata di A, modificata\",\n  \"content\": \"Sempre solo di A\",\n  \"type\": \"idea\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE nota di A nel cestino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Nota spostata nel cestino\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Nota spostata nel cestino\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteA}}"
+          }
+        },
+        {
+          "name": "GET cestino di A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene {{noteA}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteA'))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?trash=true"
+          }
+        },
+        {
+          "name": "GET cestino di B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"non contiene {{noteA}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteA'))).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?trash=true"
+          }
+        },
+        {
+          "name": "GET dettaglio cestino di A visto da B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary/detail?id={{noteA}}&trash=true"
+          }
+        },
+        {
+          "name": "POST ripristina nota di A da B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary/restore?id={{noteA}}"
+          }
+        },
+        {
+          "name": "DELETE definitivo nota di A da B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"errore con error, code e message\", () => { const e = pm.response.json(); pm.expect(e.error).to.eql(true); pm.expect(e.message).to.be.a('string').and.not.empty; });",
+                  "pm.test(\"codice NOT_FOUND\", () => { pm.expect(pm.response.json().code).to.eql(\"NOT_FOUND\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorB}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?id={{noteA}}&permanent=true"
+          }
+        },
+        {
+          "name": "GET cestino di A dopo i tentativi di B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene {{noteA}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteA'))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary?trash=true"
+          }
+        },
+        {
+          "name": "POST ripristina nota di A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"messaggio \\\"Nota ripristinata\\\"\", () => { pm.expect(pm.response.json().message).to.eql(\"Nota ripristinata\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary/restore?id={{noteA}}"
+          }
+        },
+        {
+          "name": "GET lista di A dopo il ripristino",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"contiene {{noteA}}\", () => { const ids = pm.response.json().map(e => e._id); pm.expect(ids.includes(pm.collectionVariables.get('noteA'))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorA}}"
+              }
+            ],
+            "url": "{{baseUrl}}/diary"
+          }
+        },
+        {
+          "name": "POST limite per visitatore",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('visitorC')) { pm.collectionVariables.set('visitorC', pm.variables.replaceIn('{{$guid}}').toLowerCase()); pm.collectionVariables.set('limitCount', '0'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const n = Number(pm.collectionVariables.get('limitCount') || 0) + 1;",
+                  "pm.collectionVariables.set('limitCount', String(n));",
+                  "if (n <= 50) {",
+                  "  if (pm.response.code !== 201) pm.test('nota ' + n + ' creata', () => pm.response.to.have.status(201));",
+                  "  if (pm.execution && typeof pm.execution.setNextRequest === 'function') pm.execution.setNextRequest(\"POST limite per visitatore\"); else postman.setNextRequest(\"POST limite per visitatore\");",
+                  "} else {",
+                  "  pm.test('le prime 50 note create, la 51a respinta', () => pm.response.to.have.status(429));",
+                  "  pm.test('codice DEMO_LIMIT_REACHED', () => pm.expect(pm.response.json().code).to.eql('DEMO_LIMIT_REACHED'));",
+                  "  pm.collectionVariables.unset('visitorC');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Demo-Visitor",
+                "value": "{{visitorC}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/diary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nota di riempimento\",\n  \"content\": \"Per verificare il limite di 50 note\",\n  \"type\": \"note\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

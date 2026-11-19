@@ -1,0 +1,415 @@
+{
+  "name": "DevDiary Reset",
+  "id": "DevDiaryReset001",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "9709663b-da7d-4768-9eac-d0b03bdb03f9",
+      "position": [
+        0,
+        0
+      ],
+      "name": "POST demo reset",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "webhookId": "5df3bb93-0fa5-4741-b293-30ba8e5c3b09",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "demo/reset",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "__ALLOWED_ORIGINS__"
+        }
+      }
+    },
+    {
+      "id": "a03f8a01-b2a3-4482-a933-1c5f13257d46",
+      "position": [
+        240,
+        0
+      ],
+      "name": "resetPrepare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "@@lib:resetPrepare@@"
+      }
+    },
+    {
+      "id": "8d0267f1-5156-4a54-bce1-3922eac6a01b",
+      "position": [
+        480,
+        0
+      ],
+      "name": "Reset allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "adbd41af-f5b0-45a2-80ec-a749322b49ce",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "aed82d09-eed7-4dec-babc-0b945b0f4a56",
+      "position": [
+        720,
+        0
+      ],
+      "name": "Count all notes",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "mongoDb": {
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
+        }
+      },
+      "parameters": {
+        "collection": "entries",
+        "operation": "aggregate",
+        "query": "[{\"$count\":\"n\"}]"
+      }
+    },
+    {
+      "id": "0d32f44d-d2b1-439a-92a9-14ee8265fbb9",
+      "position": [
+        960,
+        0
+      ],
+      "name": "resetPlan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "@@lib:resetPlan@@"
+      }
+    },
+    {
+      "id": "48057d7e-99c0-45b7-994d-8f7d341225dc",
+      "position": [
+        1200,
+        0
+      ],
+      "name": "Proceed with reset?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9dd175d1-f7d2-40c5-8949-24b47706834c",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "4bd20033-9080-4acb-90ab-1ccadd5117ee",
+      "position": [
+        1440,
+        0
+      ],
+      "name": "Delete all notes",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "mongoDb": {
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
+        }
+      },
+      "parameters": {
+        "collection": "entries",
+        "operation": "delete",
+        "query": "{}"
+      }
+    },
+    {
+      "id": "11c580f6-99e3-4764-85bd-c8798f6422f7",
+      "position": [
+        1680,
+        0
+      ],
+      "name": "resetSeed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "@@lib:resetSeed@@"
+      }
+    },
+    {
+      "id": "1f88e14e-d576-4621-aedf-44916c5f5e3e",
+      "position": [
+        2160,
+        0
+      ],
+      "name": "Insert sample notes",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "mongoDb": {
+          "id": "DevDiaryMongo001",
+          "name": "MongoDB DevDiary"
+        }
+      },
+      "parameters": {
+        "collection": "entries",
+        "operation": "insert",
+        "fields": "title,content,type,language,code,tags,isFavorite,isSample,ownerId,deletedAt,createdAt,updatedAt",
+        "options": {}
+      }
+    },
+    {
+      "id": "5d30fe2f-ac00-48cc-9e54-19522180535c",
+      "position": [
+        2400,
+        0
+      ],
+      "name": "resetResult",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "@@lib:resetResult@@"
+      }
+    },
+    {
+      "id": "8e545fce-c585-481f-9969-295bfe3bc7f0",
+      "position": [
+        2640,
+        0
+      ],
+      "name": "Respond reset",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.payload }}",
+        "options": {
+          "responseCode": "={{ $json.status }}"
+        }
+      }
+    },
+    {
+      "id": "ce460778-2222-48a7-9003-084eaeaaa724",
+      "name": "Seed ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1920,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "629f52d9-ea37-40c1-b757-b1401dc0a785",
+              "leftValue": "={{ String($json.ok) }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "POST demo reset": {
+      "main": [
+        [
+          {
+            "node": "resetPrepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "resetPrepare": {
+      "main": [
+        [
+          {
+            "node": "Reset allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset allowed?": {
+      "main": [
+        [
+          {
+            "node": "Count all notes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond reset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Count all notes": {
+      "main": [
+        [
+          {
+            "node": "resetPlan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "resetPlan": {
+      "main": [
+        [
+          {
+            "node": "Proceed with reset?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proceed with reset?": {
+      "main": [
+        [
+          {
+            "node": "Delete all notes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond reset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete all notes": {
+      "main": [
+        [
+          {
+            "node": "resetSeed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "resetSeed": {
+      "main": [
+        [
+          {
+            "node": "Seed ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert sample notes": {
+      "main": [
+        [
+          {
+            "node": "resetResult",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "resetResult": {
+      "main": [
+        [
+          {
+            "node": "Respond reset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seed ok?": {
+      "main": [
+        [
+          {
+            "node": "Respond reset",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert sample notes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "tags": []
+}

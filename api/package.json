@@ -1,0 +1,8 @@
+{
+  "name": "devdiary-api",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "build": "node scripts/build-workflow.js"
+  }
+}

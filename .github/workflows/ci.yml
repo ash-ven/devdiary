@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  api-unit:
+    name: API - test unitari
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Logica dei nodi Code, build del workflow, proxy, seed
+        working-directory: api
+        run: npm test
+
+  api-contract:
+    name: API - test di contratto (Newman)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Avvia MongoDB e le due istanze dell'API
+        run: docker compose -f api/docker-compose.yml up -d --build --wait
+      - name: Contratto della traccia (DEMO_MODE=false)
+        run: npx -y newman@6.2.1 run postman/devdiary-api.postman_collection.json -e postman/local-contratto.postman_environment.json --folder Contratto
+      - name: Regole della demo (DEMO_MODE=true)
+        run: npx -y newman@6.2.1 run postman/devdiary-api.postman_collection.json -e postman/local-demo.postman_environment.json --folder Demo
+      - name: Log dei container
+        if: failure()
+        run: docker compose -f api/docker-compose.yml logs
+
+  contrast:
+    name: Contrasto dei colori (WCAG 2.1 AA)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test dello strumento
+        run: node --test tools/contrast/verify-tokens.test.js
+      - name: Token della palette Blu matita e rosa
+        run: node tools/contrast/verify-tokens.js

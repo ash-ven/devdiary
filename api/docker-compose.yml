@@ -1,0 +1,53 @@
+# Stack locale: MongoDB + due istanze dell'API (contratto della traccia e demo).
+# I valori qui sono solo per sviluppo e test: in produzione arrivano dalle variabili di Render.
+x-api: &api
+  build: .
+  depends_on:
+    mongo:
+      condition: service_healthy
+  healthcheck:
+    test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:10000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+    interval: 5s
+    timeout: 5s
+    retries: 30
+    start_period: 20s
+
+services:
+  mongo:
+    image: mongo:6.0
+    volumes:
+      - devdiary_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1}).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    <<: *api
+    ports:
+      - "5678:10000"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: dev_diary
+      DEMO_MODE: "false"
+      ALLOWED_ORIGINS: "*"
+      RESET_TOKEN: dev-reset-token-for-local-tests-only
+      N8N_ENCRYPTION_KEY: dev-encryption-key-not-secret
+      RATE_LIMIT_PER_MINUTE: "1000"
+
+  api-demo:
+    <<: *api
+    ports:
+      - "5680:10000"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: dev_diary_demo
+      DEMO_MODE: "true"
+      ALLOWED_ORIGINS: "*"
+      RESET_TOKEN: dev-reset-token-for-local-tests-only
+      N8N_ENCRYPTION_KEY: dev-encryption-key-not-secret
+      RATE_LIMIT_PER_MINUTE: "1000"
+
+volumes:
+  devdiary_mongo_data:

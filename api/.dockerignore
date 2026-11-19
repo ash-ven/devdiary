@@ -1,0 +1,4 @@
+node_modules
+workflows/dist
+docker-compose.yml
+**/*.test.js
