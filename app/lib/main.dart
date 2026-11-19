@@ -3,8 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'screens/dashboard_screen.dart';
 import 'screens/diary_list_screen.dart';
+import 'services/diary_api_service.dart';
+import 'services/visitor_id.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  DiaryApiService.defaultVisitorId = await VisitorStore().load();
   runApp(const DevDiaryApp());
 }
 
