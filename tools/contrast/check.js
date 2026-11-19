@@ -115,23 +115,29 @@ function run(tokens, autofix) {
   return { tokens: t, changed, rows };
 }
 
-const out = {};
-for (const [id, p] of Object.entries(palettes)) {
-  out[id] = { name: p.name, checkOnly: !!p.checkOnly, themes: {} };
-  for (const theme of ['light', 'dark']) {
-    if (!p[theme]) continue;
-    out[id].themes[theme] = run(p[theme], !p.checkOnly);
+function main() {
+  const out = {};
+  for (const [id, p] of Object.entries(palettes)) {
+    out[id] = { name: p.name, checkOnly: !!p.checkOnly, themes: {} };
+    for (const theme of ['light', 'dark']) {
+      if (!p[theme]) continue;
+      out[id].themes[theme] = run(p[theme], !p.checkOnly);
+    }
   }
-}
-fs.writeFileSync(path.join(__dirname, 'results.json'), JSON.stringify(out, null, 2));
+  fs.writeFileSync(path.join(__dirname, 'results.json'), JSON.stringify(out, null, 2));
 
-for (const [id, p] of Object.entries(out)) {
-  for (const [theme, r] of Object.entries(p.themes)) {
-    const failsBefore = r.rows.filter(x => x.before < x.req).length;
-    const failsAfter = r.rows.filter(x => !x.pass).length;
-    console.log(`\n== ${p.name} / ${theme}: ${r.rows.length} controlli, falliti all'inizio ${failsBefore}, dopo le correzioni ${failsAfter}`);
-    for (const x of r.rows.filter(x => x.before < x.req || !x.pass))
-      console.log(`  ${x.pass ? 'OK ' : 'NO '} ${x.label.padEnd(36)} ${String(x.before).padStart(5)} -> ${String(x.ratio).padStart(5)} (min ${x.req})  ${x.fgHex} su ${x.bgHex}`);
-    for (const [k, v] of Object.entries(r.changed)) console.log(`     corretto ${k}: ${v} -> ${r.tokens[k]}`);
+  for (const [id, p] of Object.entries(out)) {
+    for (const [theme, r] of Object.entries(p.themes)) {
+      const failsBefore = r.rows.filter(x => x.before < x.req).length;
+      const failsAfter = r.rows.filter(x => !x.pass).length;
+      console.log(`\n== ${p.name} / ${theme}: ${r.rows.length} controlli, falliti all'inizio ${failsBefore}, dopo le correzioni ${failsAfter}`);
+      for (const x of r.rows.filter(x => x.before < x.req || !x.pass))
+        console.log(`  ${x.pass ? 'OK ' : 'NO '} ${x.label.padEnd(36)} ${String(x.before).padStart(5)} -> ${String(x.ratio).padStart(5)} (min ${x.req})  ${x.fgHex} su ${x.bgHex}`);
+      for (const [k, v] of Object.entries(r.changed)) console.log(`     corretto ${k}: ${v} -> ${r.tokens[k]}`);
+    }
   }
 }
+
+if (require.main === module) main();
+
+module.exports = { lum, ratio, over, checks, resolve, run };
