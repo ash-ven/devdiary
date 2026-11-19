@@ -71,4 +71,17 @@ void main() {
     expect(diary.selectedId, isNull);
     expect(find.text('Oggi'), findsOneWidget);
   });
+
+  testWidgets('new note opens in the diary without filters', (tester) async {
+    final diary = await _pump(tester, const Size(1280, 900));
+    diary.setView(DiaryView.favorites);
+    diary.searchField.text = 'prima';
+    diary.setSearch('prima');
+    diary.startNew();
+    await tester.pumpAndSettle();
+    expect(diary.view, DiaryView.diary);
+    expect(diary.search, isEmpty);
+    expect(diary.searchField.text, isEmpty);
+    expect(find.text('Nuova nota'), findsWidgets);
+  });
 }

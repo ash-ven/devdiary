@@ -127,4 +127,15 @@ void main() {
     expect(paletteMatches([withCode], 'BUFFER').single.id, 'x');
     expect(paletteMatches([withCode], 'assente'), isEmpty);
   });
+
+  test('highlight survives a string ending with a backslash', () {
+    final tokens = highlight(r"final p = 'C:\", 'dart');
+    expect(tokens.map((t) => t.text).join(), r"final p = 'C:\");
+  });
+
+  test('yesterday stays Ieri across the spring clock change', () {
+    final now = DateTime(2026, 3, 30, 12);
+    final note = _entry(DateTime(2026, 3, 29, 9).toUtc().toIso8601String());
+    expect(groupByDay([note], now).single.label, 'Ieri');
+  });
 }

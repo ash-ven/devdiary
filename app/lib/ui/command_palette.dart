@@ -7,8 +7,14 @@ import '../state/scope.dart';
 import 'common.dart';
 import 'type_mark.dart';
 
-Future<void> showCommandPalette(BuildContext context) =>
-    showDialog<void>(context: context, builder: (_) => const CommandPalette());
+Future<void> showCommandPalette(BuildContext context) {
+  final diary = DevDiaryScope.of(context).diary;
+  if (diary.all.isEmpty) diary.loadAll();
+  return showDialog<void>(
+    context: context,
+    builder: (_) => const CommandPalette(),
+  );
+}
 
 /// Note caricate che contengono [query] nel titolo, nel testo o nel codice.
 List<DiaryEntry> paletteMatches(List<DiaryEntry> entries, String query) {
@@ -47,7 +53,10 @@ class _CommandPaletteState extends State<CommandPalette> {
     final t = context.tokens;
     final l = context.l10n;
     final diary = DevDiaryScope.of(context).diary;
-    final matches = paletteMatches(diary.entries, _query);
+    final matches = paletteMatches(
+      diary.all.isNotEmpty ? diary.all : diary.entries,
+      _query,
+    );
     final index = matches.isEmpty ? 0 : _index.clamp(0, matches.length - 1);
 
     return Dialog(

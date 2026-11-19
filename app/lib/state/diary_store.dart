@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart'
+    show ChangeNotifier, TextEditingController;
 
 import '../models/diary_entry.dart';
 import '../services/api_exception.dart';
@@ -32,6 +33,9 @@ class DiaryStore extends ChangeNotifier {
 
   /// null finché il primo controllo di /status non ha risposto.
   bool? apiOnline;
+
+  /// Testo del campo di ricerca, tenuto allineato con [search].
+  final searchField = TextEditingController();
 
   int _seq = 0;
   Timer? _debounce;
@@ -158,10 +162,16 @@ class DiaryStore extends ChangeNotifier {
     _debounce = Timer(const Duration(milliseconds: 300), load);
   }
 
-  void clearFilters() {
+  void _resetFilters() {
     type = null;
     tag = null;
     search = '';
+    searchField.clear();
+    _debounce?.cancel();
+  }
+
+  void clearFilters() {
+    _resetFilters();
     load();
   }
 
@@ -172,10 +182,13 @@ class DiaryStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Apre una nota da un'altra vista (ricerca rapida, dashboard).
+  /// Apre una nota da un'altra vista (ricerca rapida, dashboard): diario senza filtri.
   void open(String id) {
-    if (!isListView) setView(DiaryView.diary);
+    final reload = view != DiaryView.diary || hasFilters;
+    view = DiaryView.diary;
+    _resetFilters();
     select(id);
+    if (reload) load();
   }
 
   static const _sampleReadOnly = ApiException(
@@ -184,11 +197,16 @@ class DiaryStore extends ChangeNotifier {
     'Le note di esempio non si modificano',
   );
 
+  /// Apre il form nel diario senza filtri, così la nota salvata resta visibile.
   void startNew() {
-    if (view == DiaryView.trash || !isListView) setView(DiaryView.diary);
+    final reload = view != DiaryView.diary || hasFilters;
+    view = DiaryView.diary;
+    _resetFilters();
+    selectedId = null;
     composing = true;
     editing = null;
     notifyListeners();
+    if (reload) load();
   }
 
   void startEdit(DiaryEntry entry) {
@@ -259,6 +277,7 @@ class DiaryStore extends ChangeNotifier {
   @override
   void dispose() {
     _debounce?.cancel();
+    searchField.dispose();
     super.dispose();
   }
 }

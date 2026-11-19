@@ -196,7 +196,9 @@ List<HlToken> highlight(String code, String? language) {
         if (code[j] == r'\') j++;
         j++;
       }
-      final stop = j < code.length && code[j] == c ? j + 1 : j;
+      final stop = j < code.length && code[j] == c
+          ? j + 1
+          : (j < code.length ? j : code.length);
       push(HlKind.string, code.substring(i, stop));
       i = stop;
       continue;

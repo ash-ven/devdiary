@@ -25,7 +25,7 @@ DateTime? localTime(String iso) => DateTime.tryParse(iso)?.toLocal();
 /// Raggruppa le note per giorno di creazione (ora locale): Oggi, Ieri, poi la data.
 /// Le note arrivano già ordinate dalla più recente; l'ordine si mantiene.
 List<DayGroup> groupByDay(List<DiaryEntry> entries, DateTime now) {
-  final today = DateTime(now.year, now.month, now.day);
+  final today = DateTime.utc(now.year, now.month, now.day);
   final groups = <String, List<DiaryEntry>>{};
   for (final e in entries) {
     final t = localTime(e.createdAt);
@@ -33,7 +33,7 @@ List<DayGroup> groupByDay(List<DiaryEntry> entries, DateTime now) {
     if (t == null) {
       label = 'Senza data';
     } else {
-      final day = DateTime(t.year, t.month, t.day);
+      final day = DateTime.utc(t.year, t.month, t.day);
       final diff = today.difference(day).inDays;
       label = diff == 0
           ? 'Oggi'

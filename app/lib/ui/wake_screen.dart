@@ -30,7 +30,8 @@ class _WakeScreenState extends State<WakeScreen> {
     _begin();
   }
 
-  void _begin() {
+  void _begin({bool now = false}) {
+    _next?.cancel();
     _elapsed = 0;
     _attempt = 0;
     _gaveUp = false;
@@ -38,7 +39,11 @@ class _WakeScreenState extends State<WakeScreen> {
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _elapsed++);
     });
-    _schedule();
+    if (now) {
+      _try();
+    } else {
+      _schedule();
+    }
   }
 
   void _schedule() {
@@ -52,6 +57,7 @@ class _WakeScreenState extends State<WakeScreen> {
   }
 
   Future<void> _try() async {
+    if (!mounted) return;
     _attempt++;
     final diary = DevDiaryScope.of(context).diary;
     await diary.checkStatus();
@@ -124,10 +130,7 @@ class _WakeScreenState extends State<WakeScreen> {
                 Text(l.wakeGiveUp, style: TextStyle(color: t.ink2)),
                 const SizedBox(height: 12),
                 FilledButton(
-                  onPressed: () => setState(() {
-                    _begin();
-                    _try();
-                  }),
+                  onPressed: () => setState(() => _begin(now: true)),
                   style: FilledButton.styleFrom(
                     backgroundColor: t.primary,
                     foregroundColor: t.onPrimary,

@@ -61,6 +61,7 @@ class DiaryList extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               TextField(
+                controller: diary.searchField,
                 onChanged: diary.setSearch,
                 style: TextStyle(color: t.ink, fontSize: 15),
                 decoration: InputDecoration(
