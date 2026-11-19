@@ -14,7 +14,7 @@ Future<void> main() async {
   final settings = SettingsStore();
   await settings.load();
   final diary = DiaryStore(
-    DiaryApiService(statusTimeout: const Duration(seconds: 3)),
+    DiaryApiService(statusTimeout: const Duration(seconds: 20)),
   );
   runApp(DevDiaryApp(diary: diary, settings: settings));
   diary.start();

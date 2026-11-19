@@ -5,11 +5,9 @@ import 'package:material_ui/material_ui.dart';
 import '../state/scope.dart';
 import 'common.dart';
 
-/// Attese tra un tentativo e l'altro, in secondi; l'ultima si ripete.
-const wakeDelays = [3, 5, 8, 13, 20, 30];
-const wakeLimit = 120;
-
-/// Schermata mostrata quando l'API non risponde all'avvio (piano gratuito che dorme).
+/// Schermata mostrata mentre l'API sul piano gratuito si sveglia. I tentativi
+/// li fa [DiaryStore.start]; qui si mostrano il tempo trascorso e, se il server
+/// non risponde entro il limite, il pulsante Riprova.
 class WakeScreen extends StatefulWidget {
   const WakeScreen({super.key});
 
@@ -19,60 +17,25 @@ class WakeScreen extends StatefulWidget {
 
 class _WakeScreenState extends State<WakeScreen> {
   int _elapsed = 0;
-  int _attempt = 0;
-  bool _gaveUp = false;
   Timer? _tick;
-  Timer? _next;
 
   @override
   void initState() {
     super.initState();
-    _begin();
+    _startClock();
   }
 
-  void _begin({bool now = false}) {
-    _next?.cancel();
+  void _startClock() {
     _elapsed = 0;
-    _attempt = 0;
-    _gaveUp = false;
     _tick?.cancel();
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _elapsed++);
     });
-    if (now) {
-      _try();
-    } else {
-      _schedule();
-    }
-  }
-
-  void _schedule() {
-    final delay = wakeDelays[_attempt.clamp(0, wakeDelays.length - 1)];
-    if (_elapsed + delay > wakeLimit) {
-      _tick?.cancel();
-      setState(() => _gaveUp = true);
-      return;
-    }
-    _next = Timer(Duration(seconds: delay), _try);
-  }
-
-  Future<void> _try() async {
-    if (!mounted) return;
-    _attempt++;
-    final diary = DevDiaryScope.of(context).diary;
-    await diary.checkStatus();
-    if (!mounted) return;
-    if (diary.apiOnline == true) {
-      diary.load();
-      return;
-    }
-    _schedule();
   }
 
   @override
   void dispose() {
     _tick?.cancel();
-    _next?.cancel();
     super.dispose();
   }
 
@@ -80,6 +43,9 @@ class _WakeScreenState extends State<WakeScreen> {
   Widget build(BuildContext context) {
     final t = context.tokens;
     final l = context.l10n;
+    final diary = DevDiaryScope.of(context).diary;
+    final gaveUp = diary.gaveUp;
+    if (gaveUp) _tick?.cancel();
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
@@ -109,7 +75,7 @@ class _WakeScreenState extends State<WakeScreen> {
                 style: TextStyle(color: t.ink2, fontSize: 15, height: 1.5),
               ),
               const SizedBox(height: 18),
-              if (!_gaveUp) ...[
+              if (!gaveUp) ...[
                 if (!MediaQuery.of(context).disableAnimations)
                   SizedBox(
                     width: 200,
@@ -130,7 +96,10 @@ class _WakeScreenState extends State<WakeScreen> {
                 Text(l.wakeGiveUp, style: TextStyle(color: t.ink2)),
                 const SizedBox(height: 12),
                 FilledButton(
-                  onPressed: () => setState(() => _begin(now: true)),
+                  onPressed: () {
+                    setState(_startClock);
+                    diary.start();
+                  },
                   style: FilledButton.styleFrom(
                     backgroundColor: t.primary,
                     foregroundColor: t.onPrimary,

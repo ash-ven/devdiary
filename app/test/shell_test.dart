@@ -84,4 +84,40 @@ void main() {
     expect(diary.searchField.text, isEmpty);
     expect(find.text('Nuova nota'), findsWidgets);
   });
+
+  test('start retries until the api answers, then loads the diary', () async {
+    var statusCalls = 0;
+    final client = MockClient((r) async {
+      if (r.url.path.endsWith('/status')) {
+        statusCalls++;
+        return statusCalls < 3
+            ? http.Response('{"code":"DATABASE_UNAVAILABLE"}', 503)
+            : http.Response(
+                jsonEncode({'status': 'OK', 'database': 'OK'}),
+                200,
+              );
+      }
+      return http.Response(jsonEncode(_notes), 200);
+    });
+    final diary = DiaryStore(
+      DiaryApiService(client: client, baseUrl: 'http://x'),
+      wakeDelays: const [0],
+    );
+    await diary.start();
+    expect(statusCalls, 3);
+    expect(diary.waking, isFalse);
+    expect(diary.entries.length, 1);
+  });
+
+  test('start gives up after the limit and offers retry', () async {
+    final client = MockClient((r) async => http.Response('{}', 503));
+    final diary = DiaryStore(
+      DiaryApiService(client: client, baseUrl: 'http://x'),
+      wakeDelays: const [0],
+      wakeLimit: Duration.zero,
+    );
+    await diary.start();
+    expect(diary.waking, isTrue);
+    expect(diary.gaveUp, isTrue);
+  });
 }

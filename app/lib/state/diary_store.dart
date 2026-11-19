@@ -11,7 +11,25 @@ enum DiaryView { diary, favorites, dashboard, trash, settings }
 
 /// Stato condiviso del diario: vista, filtri, note caricate, selezione, form.
 class DiaryStore extends ChangeNotifier {
-  DiaryStore(this.api);
+  DiaryStore(
+    this.api, {
+    this.wakeDelays = const [3, 5, 8, 13, 20, 30],
+    this.wakeLimit = const Duration(seconds: 120),
+  });
+
+  /// Attese tra un tentativo e l'altro quando l'API dorme; l'ultima si ripete.
+  final List<int> wakeDelays;
+
+  /// Dopo questo tempo si smette di riprovare e si offre "Riprova".
+  final Duration wakeLimit;
+
+  /// L'API non ha risposto entro 3 s: si mostra la schermata di risveglio.
+  bool waking = false;
+
+  /// Tempo massimo superato senza risposta.
+  bool gaveUp = false;
+
+  bool _starting = false;
 
   final DiaryApiService api;
 
@@ -68,11 +86,41 @@ class DiaryStore extends ChangeNotifier {
   }
 
   /// Avvio: prima lo stato dell'API (3 s), poi il diario.
+  /// Avvio: aspetta /status (anche a lungo: sul piano gratuito risponde in 2-4 s
+  /// da sveglio, molto di più quando si sta avviando). Se dopo 3 s non ha ancora
+  /// risposto mostra la schermata di risveglio e riprova a intervalli crescenti
+  /// fino a [wakeLimit]; appena risponde carica il diario.
   Future<void> start() async {
+    if (_starting) return;
+    _starting = true;
     loading = true;
+    gaveUp = false;
     notifyListeners();
-    await checkStatus();
+    final clock = Stopwatch()..start();
+    final slow = Timer(const Duration(seconds: 3), () {
+      if (apiOnline != true) {
+        waking = true;
+        notifyListeners();
+      }
+    });
+    var attempt = 0;
+    while (true) {
+      await checkStatus();
+      if (apiOnline == true) break;
+      waking = true;
+      final delay = wakeDelays[attempt.clamp(0, wakeDelays.length - 1)];
+      attempt++;
+      if (clock.elapsed + Duration(seconds: delay) > wakeLimit) {
+        gaveUp = true;
+        break;
+      }
+      notifyListeners();
+      await Future<void>.delayed(Duration(seconds: delay));
+    }
+    slow.cancel();
+    _starting = false;
     if (apiOnline == true) {
+      waking = false;
       await load();
     } else {
       loading = false;

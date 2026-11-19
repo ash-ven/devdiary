@@ -61,7 +61,7 @@ class _DevDiaryShellState extends State<DevDiaryShell> {
         if (w < 820) return const _Narrow();
         final wide = w >= 1180;
         final Widget center;
-        if (diary.apiOnline == false) {
+        if (diary.waking) {
           center = const Expanded(child: WakeScreen());
         } else if (diary.isListView) {
           center = Expanded(
@@ -160,7 +160,7 @@ class _Narrow extends StatelessWidget {
     };
 
     final Widget body;
-    if (diary.apiOnline == false) {
+    if (diary.waking) {
       body = const WakeScreen();
     } else if (diary.composing) {
       body = NoteForm(
@@ -239,7 +239,7 @@ class _Narrow extends StatelessWidget {
         ],
       ),
       floatingActionButton:
-          !inside && diary.view == DiaryView.diary && diary.apiOnline != false
+          !inside && diary.view == DiaryView.diary && !diary.waking
           ? FloatingActionButton(
               tooltip: l.newNote,
               onPressed: diary.startNew,
