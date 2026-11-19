@@ -14,6 +14,7 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = MediaQuery.sizeOf(context).width < 820;
     final t = context.tokens;
     final l = context.l10n;
     final scope = DevDiaryScope.of(context);
@@ -53,7 +54,12 @@ class SettingsView extends StatelessWidget {
     );
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(32, 28, 32, 48),
+      padding: EdgeInsets.fromLTRB(
+        narrow ? 18 : 32,
+        narrow ? 14 : 28,
+        narrow ? 18 : 32,
+        48,
+      ),
       children: [
         Align(
           alignment: Alignment.centerLeft,
@@ -62,15 +68,16 @@ class SettingsView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l.navSettings,
-                  style: TextStyle(
-                    color: t.ink,
-                    fontSize: 34,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -1,
+                if (!narrow)
+                  Text(
+                    l.navSettings,
+                    style: TextStyle(
+                      color: t.ink,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1,
+                    ),
                   ),
-                ),
                 section(l.themeLabel, [
                   SegmentedButton<ThemeMode>(
                     showSelectedIcon: false,

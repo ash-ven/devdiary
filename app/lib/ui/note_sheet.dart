@@ -10,7 +10,100 @@ import 'common.dart';
 import 'markdown_view.dart';
 import 'type_mark.dart';
 
-/// Il foglio della nota, con il margine rosa del quaderno.
+/// Un'azione sulla nota: pulsante con etichetta nel foglio largo,
+/// icona nella barra in alto sul telefono.
+class NoteAction {
+  const NoteAction(
+    this.icon,
+    this.label,
+    this.onPressed, {
+    this.accent = false,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final bool accent;
+}
+
+/// Azioni disponibili per [entry]: nel cestino Ripristina ed Elimina,
+/// altrimenti Modifica, Preferito e Sposta nel cestino (disattivate per gli esempi).
+List<NoteAction> noteActions(BuildContext context, DiaryEntry entry) {
+  final t = context.tokens;
+  final l = context.l10n;
+  final diary = DevDiaryScope.of(context).diary;
+
+  Future<void> run(Future<void> Function() action, [String? done]) async {
+    try {
+      await action();
+      if (done != null && context.mounted) showMessage(context, done);
+    } on ApiException catch (e) {
+      if (context.mounted) showMessage(context, errorText(context, e));
+    }
+  }
+
+  Future<void> confirmDelete() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.deleteConfirmTitle),
+        content: Text(l.deleteConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: t.accentText,
+              foregroundColor: t.paper,
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l.deleteForever),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await run(() => diary.deletePermanently(entry), l.deleted);
+  }
+
+  if (diary.view == DiaryView.trash) {
+    return [
+      NoteAction(
+        Icons.restore,
+        l.restore,
+        () => run(() => diary.restore(entry), l.restored),
+      ),
+      NoteAction(
+        Icons.delete_forever_outlined,
+        l.deleteForever,
+        confirmDelete,
+        accent: true,
+      ),
+    ];
+  }
+  final sample = entry.isSample;
+  return [
+    NoteAction(
+      Icons.edit_outlined,
+      l.actionEdit,
+      sample ? null : () => diary.startEdit(entry),
+    ),
+    NoteAction(
+      entry.isFavorite ? Icons.star : Icons.star_border,
+      entry.isFavorite ? l.actionUnfavorite : l.actionFavorite,
+      sample ? null : () => run(() => diary.toggleFavorite(entry)),
+      accent: entry.isFavorite,
+    ),
+    NoteAction(
+      Icons.delete_outline,
+      l.actionTrash,
+      sample ? null : () => run(() => diary.moveToTrash(entry), l.movedToTrash),
+    ),
+  ];
+}
+
+/// Il foglio della nota, con il margine rosa del quaderno (solo sugli schermi larghi).
+/// Sul telefono le azioni stanno nella barra in alto, non nel foglio.
 class NoteSheet extends StatelessWidget {
   const NoteSheet({super.key, required this.entry, this.narrow = false});
   final DiaryEntry entry;
@@ -22,81 +115,8 @@ class NoteSheet extends StatelessWidget {
     final l = context.l10n;
     final diary = DevDiaryScope.of(context).diary;
     final created = localTime(entry.createdAt);
-    final marginX = narrow ? 20.0 : 64.0;
     final inTrash = diary.view == DiaryView.trash;
-
-    Future<void> run(Future<void> Function() action, [String? done]) async {
-      try {
-        await action();
-        if (done != null && context.mounted) showMessage(context, done);
-      } on ApiException catch (e) {
-        if (context.mounted) showMessage(context, errorText(context, e));
-      }
-    }
-
-    Future<void> confirmDelete() async {
-      final ok = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l.deleteConfirmTitle),
-          content: Text(l.deleteConfirmBody),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(l.cancel),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: t.accentText,
-                foregroundColor: t.paper,
-              ),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(l.deleteForever),
-            ),
-          ],
-        ),
-      );
-      if (ok == true) {
-        await run(() => diary.deletePermanently(entry), l.deleted);
-      }
-    }
-
-    final actions = inTrash
-        ? [
-            _ActionButton(
-              icon: Icons.restore,
-              label: l.restore,
-              onPressed: () => run(() => diary.restore(entry), l.restored),
-            ),
-            _ActionButton(
-              icon: Icons.delete_forever_outlined,
-              label: l.deleteForever,
-              accent: true,
-              onPressed: confirmDelete,
-            ),
-          ]
-        : [
-            _ActionButton(
-              icon: Icons.edit_outlined,
-              label: l.actionEdit,
-              onPressed: entry.isSample ? null : () => diary.startEdit(entry),
-            ),
-            _ActionButton(
-              icon: entry.isFavorite ? Icons.star : Icons.star_border,
-              label: entry.isFavorite ? l.actionUnfavorite : l.actionFavorite,
-              accent: entry.isFavorite,
-              onPressed: entry.isSample
-                  ? null
-                  : () => run(() => diary.toggleFavorite(entry)),
-            ),
-            _ActionButton(
-              icon: Icons.delete_outline,
-              label: l.actionTrash,
-              onPressed: entry.isSample
-                  ? null
-                  : () => run(() => diary.moveToTrash(entry), l.movedToTrash),
-            ),
-          ];
+    final actions = narrow ? const <NoteAction>[] : noteActions(context, entry);
 
     return Container(
       decoration: BoxDecoration(
@@ -107,27 +127,25 @@ class NoteSheet extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          Positioned(
-            left: marginX,
-            top: 0,
-            bottom: 0,
-            width: 2,
-            child: ColoredBox(color: t.accent.withValues(alpha: .45)),
-          ),
-          SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(
-              marginX + 24,
-              narrow ? 20 : 34,
-              narrow ? 18 : 48,
-              48,
+          if (!narrow)
+            Positioned(
+              left: 64,
+              top: 0,
+              bottom: 0,
+              width: 2,
+              child: ColoredBox(color: t.accent.withValues(alpha: .45)),
             ),
+          SingleChildScrollView(
+            padding: narrow
+                ? const EdgeInsets.fromLTRB(18, 18, 18, 40)
+                : const EdgeInsets.fromLTRB(88, 34, 48, 48),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Wrap(
-                    spacing: 12,
+                    spacing: 10,
                     runSpacing: 8,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
@@ -141,7 +159,13 @@ class NoteSheet extends StatelessWidget {
                           style: TextStyle(color: t.ink3, fontSize: 13),
                         ),
                       if (entry.isSample) const SampleLabel(),
-                      ...actions,
+                      for (final a in actions)
+                        _ActionButton(
+                          icon: a.icon,
+                          label: a.label,
+                          onPressed: a.onPressed,
+                          accent: a.accent,
+                        ),
                     ],
                   ),
                   if (entry.isSample && !inTrash)
@@ -152,17 +176,17 @@ class NoteSheet extends StatelessWidget {
                         style: TextStyle(color: t.ink3, fontSize: 13),
                       ),
                     ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: narrow ? 14 : 18),
                   Semantics(
                     header: true,
                     child: Text(
                       entry.title,
                       style: TextStyle(
                         color: t.ink,
-                        fontSize: narrow ? 30 : 40,
+                        fontSize: narrow ? 27 : 40,
                         fontWeight: FontWeight.w800,
-                        height: 1.08,
-                        letterSpacing: -1.2,
+                        height: 1.1,
+                        letterSpacing: narrow ? -.6 : -1.2,
                       ),
                     ),
                   ),
@@ -181,7 +205,7 @@ class NoteSheet extends StatelessWidget {
                         ],
                       ),
                     ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: narrow ? 14 : 20),
                   MarkdownView(entry.content),
                   if ((entry.code ?? '').isNotEmpty)
                     CodeBlock(code: entry.code!, language: entry.language),

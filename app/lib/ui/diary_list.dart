@@ -8,117 +8,156 @@ import 'common.dart';
 import 'type_mark.dart';
 
 /// Il diario: ricerca, filtri per tipo, note raggruppate per giorno.
+/// Con [compact] (telefono) l'intestazione scorre insieme alle note,
+/// i filtri stanno su una riga scorrevole e le righe non mostrano i tag.
 class DiaryList extends StatelessWidget {
-  const DiaryList({super.key});
+  const DiaryList({super.key, this.compact = false});
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final diary = DevDiaryScope.of(context).diary;
+    final header = Padding(
+      padding: EdgeInsets.fromLTRB(
+        compact ? 14 : 18,
+        compact ? 12 : 18,
+        compact ? 14 : 18,
+        8,
+      ),
+      child: _header(context, diary),
+    );
+    final message = _message(context, diary);
+    if (!compact) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          header,
+          Expanded(
+            child:
+                message ??
+                ListView(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
+                  children: _rows(context, diary),
+                ),
+          ),
+        ],
+      );
+    }
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: header),
+        if (message != null)
+          SliverFillRemaining(hasScrollBody: false, child: message)
+        else
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 88),
+            sliver: SliverList.list(children: _rows(context, diary)),
+          ),
+      ],
+    );
+  }
+
+  Widget _header(BuildContext context, DiaryStore diary) {
     final t = context.tokens;
     final l = context.l10n;
-    final diary = DevDiaryScope.of(context).diary;
     final title = switch (diary.view) {
       DiaryView.favorites => l.navFavorites,
       DiaryView.trash => l.navTrash,
       _ => l.navDiary,
     };
+    final filters = [
+      _Filter(
+        label: l.filterAll,
+        selected: diary.type == null,
+        onTap: () => diary.setType(null),
+      ),
+      for (final type in noteTypes)
+        _Filter(
+          label: typeFilterLabel(l, type),
+          selected: diary.type == type,
+          colors: typeColors(t, type),
+          onTap: () => diary.setType(diary.type == type ? null : type),
+        ),
+    ];
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        const DemoNotice(),
+        // Sul telefono il titolo della vista sta già nella barra in alto.
+        if (!compact) ...[
+          Row(
             children: [
-              const DemoNotice(),
-              Row(
-                children: [
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          color: t.ink,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: t.ink,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
                     ),
-                  ),
-                  if (diary.view != DiaryView.trash &&
-                      MediaQuery.sizeOf(context).width >= 820)
-                    FilledButton.icon(
-                      onPressed: diary.startNew,
-                      icon: const Icon(Icons.add, size: 18),
-                      label: Text(l.newNote),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: t.primary,
-                        foregroundColor: t.onPrimary,
-                        minimumSize: const Size(44, 40),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: diary.searchField,
-                onChanged: diary.setSearch,
-                style: TextStyle(color: t.ink, fontSize: 15),
-                decoration: InputDecoration(
-                  hintText: l.searchHint,
-                  hintStyle: TextStyle(color: t.ink3),
-                  prefixIcon: Icon(Icons.search, color: t.ink3, size: 19),
-                  isDense: true,
-                  filled: true,
-                  fillColor: t.sheet,
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: t.ruleStrong),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: t.focus, width: 2),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 2,
-                runSpacing: 2,
-                children: [
-                  _Filter(
-                    label: l.filterAll,
-                    selected: diary.type == null,
-                    onTap: () => diary.setType(null),
-                  ),
-                  for (final type in noteTypes)
-                    _Filter(
-                      label: typeFilterLabel(l, type),
-                      selected: diary.type == type,
-                      colors: typeColors(t, type),
-                      onTap: () =>
-                          diary.setType(diary.type == type ? null : type),
-                    ),
-                ],
-              ),
-              if (diary.tag != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: InputChip(
-                    label: Text('#${diary.tag}'),
-                    onDeleted: () => diary.setTag(null),
+              if (diary.view != DiaryView.trash)
+                FilledButton.icon(
+                  onPressed: diary.startNew,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: Text(l.newNote),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: t.primary,
+                    foregroundColor: t.onPrimary,
+                    minimumSize: const Size(44, 40),
                   ),
                 ),
             ],
           ),
+          const SizedBox(height: 12),
+        ],
+        TextField(
+          controller: diary.searchField,
+          onChanged: diary.setSearch,
+          style: TextStyle(color: t.ink, fontSize: 15),
+          decoration: InputDecoration(
+            hintText: compact ? l.paletteHint : l.searchHint,
+            hintStyle: TextStyle(color: t.ink3),
+            prefixIcon: Icon(Icons.search, color: t.ink3, size: 19),
+            isDense: true,
+            filled: true,
+            fillColor: t.sheet,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: t.ruleStrong),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: t.focus, width: 2),
+            ),
+          ),
         ),
-        Expanded(child: _body(context, diary)),
+        const SizedBox(height: 8),
+        if (compact)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: filters),
+          )
+        else
+          Wrap(spacing: 2, runSpacing: 2, children: filters),
+        if (diary.tag != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: InputChip(
+              label: Text('#${diary.tag}'),
+              onDeleted: () => diary.setTag(null),
+            ),
+          ),
       ],
     );
   }
 
-  Widget _body(BuildContext context, DiaryStore diary) {
-    final t = context.tokens;
+  /// Stato vuoto, errore o caricamento; null quando ci sono note da mostrare.
+  Widget? _message(BuildContext context, DiaryStore diary) {
     final l = context.l10n;
     if (diary.error != null && diary.entries.isEmpty) {
       return _Message(
@@ -146,34 +185,36 @@ class DiaryList extends StatelessWidget {
         },
       );
     }
-    final groups = groupByDay(diary.entries, DateTime.now());
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-      children: [
-        for (final g in groups) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 14, 10, 4),
-            child: Semantics(
-              header: true,
-              child: Text(
-                g.label,
-                style: TextStyle(
-                  color: t.ink2,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
+    return null;
+  }
+
+  List<Widget> _rows(BuildContext context, DiaryStore diary) {
+    final t = context.tokens;
+    return [
+      for (final g in groupByDay(diary.entries, DateTime.now())) ...[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 14, 10, 4),
+          child: Semantics(
+            header: true,
+            child: Text(
+              g.label,
+              style: TextStyle(
+                color: t.ink2,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          for (final e in g.entries)
-            _Row(
-              entry: e,
-              selected: e.id == diary.selectedId,
-              onTap: () => diary.select(e.id),
-            ),
-        ],
+        ),
+        for (final e in g.entries)
+          _Row(
+            entry: e,
+            selected: e.id == diary.selectedId,
+            showTags: !compact,
+            onTap: () => diary.select(e.id),
+          ),
       ],
-    );
+    ];
   }
 }
 
@@ -226,10 +267,12 @@ class _Row extends StatelessWidget {
     required this.entry,
     required this.selected,
     required this.onTap,
+    this.showTags = true,
   });
   final DiaryEntry entry;
   final bool selected;
   final VoidCallback onTap;
+  final bool showTags;
 
   @override
   Widget build(BuildContext context) {
@@ -284,14 +327,15 @@ class _Row extends StatelessWidget {
                   const SampleLabel(),
                   const SizedBox(width: 8),
                 ],
-                Expanded(
-                  child: Text(
-                    entry.tags.map((tag) => '#$tag').join(' '),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: t.ink3, fontSize: 12.5),
+                if (showTags)
+                  Expanded(
+                    child: Text(
+                      entry.tags.map((tag) => '#$tag').join(' '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: t.ink3, fontSize: 12.5),
+                    ),
                   ),
-                ),
               ],
             ),
           ],

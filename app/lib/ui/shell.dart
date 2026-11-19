@@ -149,33 +149,40 @@ class _Narrow extends StatelessWidget {
     final t = context.tokens;
     final l = context.l10n;
     final diary = DevDiaryScope.of(context).diary;
-    final entry = diary.isListView ? diary.selected : null;
+    final entry = diary.isListView && !diary.composing ? diary.selected : null;
     final inside = diary.composing || entry != null;
+    final viewTitle = switch (diary.view) {
+      DiaryView.favorites => l.navFavorites,
+      DiaryView.dashboard => l.navDashboard,
+      DiaryView.trash => l.navTrash,
+      DiaryView.settings => l.navSettings,
+      DiaryView.diary => l.navDiary,
+    };
 
     final Widget body;
     if (diary.apiOnline == false) {
       body = const WakeScreen();
     } else if (diary.composing) {
-      body = Padding(
-        padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-        child: NoteForm(
-          key: ValueKey(diary.editing?.id),
-          entry: diary.editing,
-          narrow: true,
-        ),
+      body = NoteForm(
+        key: ValueKey(diary.editing?.id),
+        entry: diary.editing,
+        narrow: true,
       );
     } else if (entry != null) {
-      body = Padding(
-        padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-        child: NoteSheet(key: ValueKey(entry.id), entry: entry, narrow: true),
-      );
+      body = NoteSheet(key: ValueKey(entry.id), entry: entry, narrow: true);
     } else if (diary.view == DiaryView.dashboard) {
       body = const DashboardView();
     } else if (diary.view == DiaryView.settings) {
       body = const SettingsView();
     } else {
-      body = const DiaryList();
+      body = const DiaryList(compact: true);
     }
+
+    // Sul telefono le azioni della nota sono icone nella barra; per le note
+    // di esempio non ce ne sono (lo spiega il testo nel foglio).
+    final actions = entry == null
+        ? const <NoteAction>[]
+        : noteActions(context, entry).where((a) => a.onPressed != null);
 
     return Scaffold(
       drawer: Drawer(
@@ -186,6 +193,7 @@ class _Narrow extends StatelessWidget {
         backgroundColor: t.paper,
         surfaceTintColor: Colors.transparent,
         foregroundColor: t.ink,
+        titleSpacing: 4,
         leading: inside
             ? IconButton(
                 tooltip: l.back,
@@ -199,32 +207,48 @@ class _Narrow extends StatelessWidget {
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/images/devdiary_logo.png',
-              width: 28,
-              height: 28,
+        title: inside
+            ? null
+            : Row(
+                children: [
+                  Image.asset(
+                    'assets/images/devdiary_logo.png',
+                    width: 26,
+                    height: 26,
+                    semanticLabel: l.appTitle,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    viewTitle,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                      color: t.ink,
+                    ),
+                  ),
+                ],
+              ),
+        actions: [
+          for (final a in actions)
+            IconButton(
+              tooltip: a.label,
+              onPressed: a.onPressed,
+              icon: Icon(a.icon, color: a.accent ? t.accentText : t.ink2),
             ),
-            const SizedBox(width: 8),
-            Text(
-              l.appTitle,
-              style: TextStyle(fontWeight: FontWeight.w800, color: t.ink),
-            ),
-          ],
-        ),
+          const SizedBox(width: 4),
+        ],
       ),
       floatingActionButton:
           !inside && diary.view == DiaryView.diary && diary.apiOnline != false
-          ? FloatingActionButton.extended(
+          ? FloatingActionButton(
+              tooltip: l.newNote,
               onPressed: diary.startNew,
               backgroundColor: t.primary,
               foregroundColor: t.onPrimary,
-              icon: const Icon(Icons.add),
-              label: Text(l.newNote),
+              child: const Icon(Icons.add),
             )
           : null,
-      body: NotebookPaper(child: body),
+      body: NotebookPaper(child: SizedBox.expand(child: body)),
     );
   }
 }
@@ -411,7 +435,7 @@ class SideMenu extends StatelessWidget {
                     ),
                   ],
                   const Spacer(),
-                  if (!compact)
+                  if (!compact && !inDrawer)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Text(

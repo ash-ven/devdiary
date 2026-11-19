@@ -22,6 +22,7 @@ class DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = MediaQuery.sizeOf(context).width < 820;
     final t = context.tokens;
     final l = context.l10n;
     final diary = DevDiaryScope.of(context).diary;
@@ -58,15 +59,20 @@ class DashboardView extends StatelessWidget {
     final errors = all.where((e) => e.type == 'errore').take(3).toList();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(32, 28, 32, 48),
+      padding: EdgeInsets.fromLTRB(
+        narrow ? 18 : 32,
+        narrow ? 14 : 28,
+        narrow ? 18 : 32,
+        48,
+      ),
       children: [
         Text(
           l.dashTitle,
           style: TextStyle(
             color: t.ink,
-            fontSize: 40,
+            fontSize: narrow ? 28 : 40,
             fontWeight: FontWeight.w800,
-            letterSpacing: -1.4,
+            letterSpacing: narrow ? -.8 : -1.4,
           ),
         ),
         const SizedBox(height: 10),
@@ -244,8 +250,10 @@ class _ActivityMap extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Su schermi stretti si vede subito la parte più recente.
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
+          reverse: true,
           child: Row(
             children: [
               for (var w = 0; w < grid.length; w++)
