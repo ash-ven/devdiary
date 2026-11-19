@@ -1,9 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
   <title>DevDiary</title>
-  <!-- a tutto campo: il sistema operativo applica la propria forma; il disegno resta nella zona sicura centrale (80%) -->
-  <rect width="64" height="64" fill="#2445A8"/>
-  <rect x="20" y="0" width="3.2" height="64" fill="#FF2E83"/>
-  <rect x="27.6" y="23" width="16.8" height="3.6" rx="1.8" fill="#F7F8FC"/>
-  <rect x="32.4" y="30.2" width="13.6" height="3.6" rx="1.8" fill="#C9B8FF"/>
-  <rect x="27.6" y="37.4" width="10.4" height="3.6" rx="1.8" fill="#F7F8FC"/>
+  <rect width="128" height="128" fill="#ECEFF5"/>
+  <g transform="translate(19.2 19.2) scale(0.7)">
+    <path d="M28 42 L34 14 L52 30 Q64 26 76 30 L94 14 L100 42 Q110 62 106 86 Q100 118 64 118 Q28 118 22 86 Q18 62 28 42Z" fill="#2445A8"/>
+    <path d="M38 82 Q38 64 64 64 Q90 64 90 82 Q90 108 64 108 Q38 108 38 82Z" fill="#F7F8FC"/>
+    <path d="M48 84h32M46 93h36M50 102h28" stroke="#B8C4E3" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="47" cy="52" r="15" fill="#F7F8FC"/>
+    <circle cx="81" cy="52" r="15" fill="#F7F8FC"/>
+    <circle cx="49" cy="54" r="7.5" fill="#14213D"/>
+    <circle cx="79" cy="54" r="7.5" fill="#14213D"/>
+    <circle cx="51.5" cy="51" r="2.6" fill="#FFFFFF"/>
+    <circle cx="81.5" cy="51" r="2.6" fill="#FFFFFF"/>
+    <path d="M58 66 L70 66 L64 75Z" fill="#FF2E83"/>
+    <circle cx="31" cy="68" r="5" fill="#FF2E83" opacity=".4"/>
+    <circle cx="97" cy="68" r="5" fill="#FF2E83" opacity=".4"/>
+  </g>
 </svg>
