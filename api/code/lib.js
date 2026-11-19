@@ -122,6 +122,7 @@ function visitorFrom(headers, config) {
 
 function scopeFilter(visitorId, config) {
   if (!config.demoMode) return {};
+  if (!visitorId) return { $or: [{ isSample: true }] };
   return { $or: [{ isSample: true }, { ownerId: visitorId }] };
 }
 
@@ -193,9 +194,177 @@ function buildMarkdown(entries) {
   return markdown;
 }
 
+// ---------- funzioni di ingresso dei nodi Code ----------
+// ctx = { json, items, ref(nomeNodo) -> json, config }. Ogni funzione restituisce il json
+// dell'elemento in uscita: { ok, status, payload, ...dati per il nodo successivo }.
+
+const DEMO_LIMITS = { total: 300, perVisitor: 50 };
+const nowIso = () => new Date().toISOString();
+const dbError = (items) => (items || []).some((i) => i && i.error);
+const found = (items) => (items || []).filter((i) => i && i._id !== undefined && i._id !== null);
+const isTrue = (value) => String(value ?? '').trim().toLowerCase() === 'true';
+const readerId = (json, config) => {
+  const v = visitorFrom(json.headers, config);
+  return v.ok ? v.visitorId : null; // in lettura un visitatore senza id vede solo gli esempi
+};
+
+function idFrom(query) {
+  const id = String((query || {}).id ?? '').trim();
+  if (!id) return fail(400, 'ID_REQUIRED');
+  if (!isObjectId(id)) return fail(400, 'ID_INVALID');
+  return { ok: true, id: id.toLowerCase() };
+}
+
+const ENTRY = {
+  statusResult({ items }) {
+    if (dbError(items)) return { ok: false, status: 503, payload: { status: 'OK', database: 'ERROR' } };
+    return done(200, { status: 'OK', database: 'OK' });
+  },
+
+  listPrepare({ json, config }) {
+    const { filter, sort } = listFilter(json.query, readerId(json, config), config);
+    return done(200, null, { filter, sort });
+  },
+  listResult({ items }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    return done(200, found(items).map(toPublic));
+  },
+
+  detailPrepare({ json, config }) {
+    const idr = idFrom(json.query);
+    if (!idr.ok) return idr;
+    const trash = isTrue((json.query || {}).trash);
+    const filter = { _id: idr.id, deletedAt: trash ? { $ne: null } : null, ...scopeFilter(readerId(json, config), config) };
+    return done(200, null, { filter });
+  },
+  detailResult({ items }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    const doc = found(items)[0];
+    if (!doc) return fail(404, 'NOT_FOUND');
+    return done(200, toPublic(doc));
+  },
+
+  createPrepare({ json, config }) {
+    const v = visitorFrom(json.headers, config);
+    if (!v.ok) return v;
+    const n = normalizeEntryInput(json.body);
+    if (!n.ok) return n;
+    const now = nowIso();
+    const doc = { ...n.value, isSample: false, ownerId: v.visitorId, deletedAt: null, createdAt: now, updatedAt: now };
+    const pipeline = [{ $facet: { total: [{ $count: 'n' }], mine: [{ $match: { ownerId: v.visitorId } }, { $count: 'n' }] } }];
+    return done(201, null, { doc, pipeline });
+  },
+  createCheckLimits({ items, ref, config }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    const prep = ref('createPrepare');
+    if (config.demoMode) {
+      const counts = (items || [])[0] || {};
+      const total = ((counts.total || [])[0] || {}).n || 0;
+      const mine = ((counts.mine || [])[0] || {}).n || 0;
+      if (total >= DEMO_LIMITS.total || mine >= DEMO_LIMITS.perVisitor) return fail(429, 'DEMO_LIMIT_REACHED');
+    }
+    return done(201, null, { ...prep.doc }); // campi al primo livello per il nodo insert
+  },
+  createResult({ items }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    const inserted = (items || [])[0] || {};
+    return done(201, { success: true, message: 'Nota creata correttamente', _id: toHexId(inserted.id ?? inserted._id) });
+  },
+
+  updatePrepare({ json, config }) {
+    const v = visitorFrom(json.headers, config);
+    if (!v.ok) return v;
+    const idr = idFrom(json.query);
+    if (!idr.ok) return idr;
+    const n = normalizeEntryInput(json.body);
+    if (!n.ok) return n;
+    return done(200, null, { id: idr.id, update: n.value, filter: { _id: idr.id, ...scopeFilter(v.visitorId, config) } });
+  },
+  updateCheck({ items, ref, config }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    const prep = ref('updatePrepare');
+    const doc = found(items)[0];
+    if (!doc || doc.deletedAt) return fail(404, 'NOT_FOUND');
+    if (config.demoMode && doc.isSample === true) return fail(403, 'SAMPLE_READ_ONLY');
+    return done(200, null, { _id: prep.id, ...prep.update, updatedAt: nowIso() });
+  },
+  updateResult({ items }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    return done(200, { success: true, message: 'Nota aggiornata correttamente' });
+  },
+
+  deletePrepare({ json, config }) {
+    const v = visitorFrom(json.headers, config);
+    if (!v.ok) return v;
+    const idr = idFrom(json.query);
+    if (!idr.ok) return idr;
+    const action = isTrue((json.query || {}).permanent) ? 'hard' : 'soft';
+    return done(200, null, { id: idr.id, action, filter: { _id: idr.id, ...scopeFilter(v.visitorId, config) } });
+  },
+  deleteCheck({ items, ref, config }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    const prep = ref('deletePrepare');
+    const doc = found(items)[0];
+    if (!doc) return fail(404, 'NOT_FOUND');
+    if (config.demoMode && doc.isSample === true) return fail(403, 'SAMPLE_READ_ONLY');
+    if (prep.action === 'hard') {
+      if (!doc.deletedAt) return fail(409, 'NOT_IN_TRASH');
+      // Il nodo delete non converte _id: si confronta la sua forma testuale.
+      return done(200, null, { action: 'hard', filter: { $expr: { $eq: [{ $toString: '$_id' }, prep.id] } } });
+    }
+    if (doc.deletedAt) return fail(404, 'NOT_FOUND');
+    const now = nowIso();
+    return done(200, null, { action: 'soft', _id: prep.id, deletedAt: now, updatedAt: now });
+  },
+  deleteResult({ items, ref }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    const hard = ref('deleteCheck').action === 'hard';
+    return done(200, { success: true, message: hard ? 'Nota eliminata' : 'Nota spostata nel cestino' });
+  },
+
+  restorePrepare({ json, config }) {
+    const v = visitorFrom(json.headers, config);
+    if (!v.ok) return v;
+    const idr = idFrom(json.query);
+    if (!idr.ok) return idr;
+    return done(200, null, { id: idr.id, filter: { _id: idr.id, deletedAt: { $ne: null }, ...scopeFilter(v.visitorId, config) } });
+  },
+  restoreCheck({ items, ref }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    const prep = ref('restorePrepare');
+    if (!found(items)[0]) return fail(404, 'NOT_FOUND');
+    return done(200, null, { _id: prep.id, deletedAt: null, updatedAt: nowIso() });
+  },
+  restoreResult({ items }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    return done(200, { success: true, message: 'Nota ripristinata' });
+  },
+
+  exportPrepare({ json, config }) {
+    const { filter, sort } = listFilter({}, readerId(json, config), config);
+    return done(200, null, { filter, sort });
+  },
+  exportJsonResult({ items }) {
+    if (dbError(items)) return fail(503, 'DATABASE_UNAVAILABLE');
+    return done(200, found(items).map(toPublic));
+  },
+  exportMarkdownResult({ items }) {
+    if (dbError(items)) return { ...fail(503, 'DATABASE_UNAVAILABLE'), contentType: 'application/json; charset=utf-8' };
+    return done(200, buildMarkdown(found(items)), { contentType: 'text/markdown; charset=utf-8' });
+  },
+};
+
+// Dispatcher usato da ogni nodo Code: restituisce gli elementi n8n in uscita.
+function run(name, ctx) {
+  const fn = ENTRY[name];
+  if (!fn) throw new Error(`Funzione di ingresso sconosciuta: ${name}`);
+  const result = fn(ctx);
+  return (Array.isArray(result) ? result : [result]).map((json) => ({ json }));
+}
+
 if (typeof module !== 'undefined') {
   module.exports = {
-    CONFIG, TYPES, LIMITS, MESSAGES,
+    CONFIG, TYPES, LIMITS, MESSAGES, DEMO_LIMITS, ENTRY, run,
     fail, done, isObjectId, toHexId, toPublic, normalizeEntryInput,
     escapeRegex, visitorFrom, scopeFilter, listFilter,
     romeWallTimeToUtc, seedToDocs, buildMarkdown,
