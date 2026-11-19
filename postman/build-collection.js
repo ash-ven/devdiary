@@ -211,6 +211,21 @@ const demo = [
   }),
 ];
 
+// Controlli sul servizio pubblicato: non scrivono nulla nel database.
+const produzione = [
+  request('GET status', 'GET', '{{baseUrl}}/status', { tests: [status(200), T('stato e database OK', "pm.expect(pm.response.json()).to.eql({ status: 'OK', database: 'OK' });")] }),
+  request('GET lista anonima: solo esempi', 'GET', '{{baseUrl}}/diary', {
+    tests: [status(200),
+      T('solo note di esempio', "pm.response.json().forEach(e => pm.expect(e.isSample).to.eql(true));"),
+      T('tutte le note di esempio', "pm.expect(pm.response.json().length).to.eql(Number(pm.collectionVariables.get('seedCount')));"),
+      "pm.collectionVariables.set('sampleId', pm.response.json()[0]._id);"],
+  }),
+  request('GET dettaglio di un esempio', 'GET', '{{baseUrl}}/diary/detail?id={{sampleId}}', {
+    tests: [status(200), T('e la nota richiesta', "pm.expect(pm.response.json()._id).to.eql(pm.collectionVariables.get('sampleId'));")],
+  }),
+  request('POST senza visitatore', 'POST', '{{baseUrl}}/diary', { body: sampleBody, tests: [status(400), ...errorIs('VISITOR_REQUIRED')] }),
+];
+
 const collection = {
   info: {
     name: 'DevDiary API',
@@ -222,8 +237,9 @@ const collection = {
   item: [
     { name: 'Contratto', item: contratto },
     { name: 'Demo', item: demo },
+    { name: 'Produzione (sola lettura)', item: produzione },
   ],
 };
 
 fs.writeFileSync(path.join(__dirname, 'devdiary-api.postman_collection.json'), json(collection) + '\n');
-console.log(`collection: ${contratto.length} richieste Contratto, ${demo.length} Demo`);
+console.log(`collection: ${contratto.length} richieste Contratto, ${demo.length} Demo, ${produzione.length} Produzione`);

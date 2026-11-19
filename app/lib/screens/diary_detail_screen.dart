@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:material_ui/material_ui.dart';
+import '../theme/devdiary_fonts.dart';
 
 import '../main.dart';
 import '../models/diary_entry.dart';
+import '../services/api_exception.dart';
 import '../services/diary_api_service.dart';
 import 'diary_form_screen.dart';
 
@@ -51,7 +52,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Impossibile caricare la nota';
+        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare la nota';
         _isLoading = false;
       });
 
@@ -89,7 +90,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
           ),
           title: Text(
             'Eliminare la nota?',
-            style: GoogleFonts.manrope(
+            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
               color: DevDiaryColors.darkPurple,
               fontWeight: FontWeight.w800,
             ),
@@ -97,7 +98,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
           content: Text(
             'Vuoi davvero eliminare "${_entry!.title}"? '
             'Questa operazione non può essere annullata.',
-            style: GoogleFonts.manrope(
+            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
               color: DevDiaryColors.secondaryText,
               height: 1.45,
             ),
@@ -109,7 +110,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
               },
               child: Text(
                 'Annulla',
-                style: GoogleFonts.manrope(
+                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                   color: DevDiaryColors.purple,
                   fontWeight: FontWeight.w700,
                 ),
@@ -229,7 +230,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           'Dettaglio',
-          style: GoogleFonts.manrope(
+          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
             color: DevDiaryColors.darkPurple,
             fontWeight: FontWeight.w800,
           ),
@@ -282,7 +283,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             const SizedBox(height: 14),
             Text(
               _errorMessage!,
-              style: GoogleFonts.manrope(
+              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                 color: DevDiaryColors.secondaryText,
                 fontWeight: FontWeight.w600,
               ),
@@ -301,7 +302,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       return Center(
         child: Text(
           'Nota non trovata',
-          style: GoogleFonts.manrope(
+          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
             color: DevDiaryColors.secondaryText,
           ),
         ),
@@ -345,7 +346,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                   children: [
                     Text(
                       entry.title,
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.darkPurple,
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
@@ -357,7 +358,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
                     Text(
                       _labelForType(entry.type),
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.purple,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -400,7 +401,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                     ),
                     child: Text(
                       '#$tag',
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.purple,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -419,7 +420,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             icon: Icons.notes_rounded,
             child: Text(
               entry.content,
-              style: GoogleFonts.manrope(
+              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                 color: DevDiaryColors.text,
                 fontSize: 16,
                 height: 1.6,
@@ -436,7 +437,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
               icon: Icons.translate_rounded,
               child: Text(
                 entry.language!,
-                style: GoogleFonts.manrope(
+                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                   color: DevDiaryColors.purple,
                   fontWeight: FontWeight.w700,
                 ),
@@ -560,7 +561,7 @@ class _SectionCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: GoogleFonts.manrope(
+                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                   color: DevDiaryColors.darkPurple,
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
@@ -599,7 +600,7 @@ class _DateRow extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           '$label:',
-          style: GoogleFonts.manrope(
+          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
             color: DevDiaryColors.darkPurple,
             fontWeight: FontWeight.w700,
           ),
@@ -608,7 +609,7 @@ class _DateRow extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: GoogleFonts.manrope(
+            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
               color: DevDiaryColors.secondaryText,
               fontSize: 13,
             ),

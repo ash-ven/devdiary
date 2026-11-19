@@ -1,0 +1,34 @@
+name: Reset della demo
+
+# Ogni notte riporta la demo pubblica alle note di esempio (circa 03:17 in inverno, 04:17 in estate, ora italiana).
+# Si può avviare anche a mano da Actions → "Reset della demo" → Run workflow.
+# GitHub sospende i workflow pianificati dopo 60 giorni senza attività nel repository: vedi docs/deploy.md.
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  reset:
+    name: Ripristina le note di esempio
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chiama il webhook di reset
+        env:
+          RESET_TOKEN: ${{ secrets.RESET_TOKEN }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          if [ -z "$RESET_TOKEN" ] || [ -z "$API_BASE_URL" ]; then
+            echo "::warning::Secret RESET_TOKEN o variabile API_BASE_URL non impostati: reset saltato."
+            exit 0
+          fi
+          # I tentativi ripetuti coprono il risveglio del servizio gratuito di Render (circa un minuto);
+          # un 401 (token sbagliato) non viene ripetuto.
+          response=$(curl --silent --show-error --fail-with-body \
+            --retry 6 --retry-delay 20 --retry-connrefused --max-time 120 \
+            -X POST -H "X-Reset-Token: $RESET_TOKEN" \
+            "$API_BASE_URL/demo/reset") || { echo "$response"; echo "::error::Reset non riuscito"; exit 1; }
+          echo "$response"
+          echo "$response" | grep -q '"Demo ripristinata"'

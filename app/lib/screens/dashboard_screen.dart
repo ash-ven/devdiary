@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:material_ui/material_ui.dart';
+import '../theme/devdiary_fonts.dart';
 
 import '../main.dart';
 import '../models/diary_entry.dart';
+import '../services/api_exception.dart';
 import '../services/diary_api_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Impossibile caricare la dashboard';
+        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare la dashboard';
         _isLoading = false;
       });
     }
@@ -89,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           'Dashboard',
-          style: GoogleFonts.manrope(
+          style: TextStyle(fontFamily: DevDiaryFonts.ui, 
             color: DevDiaryColors.darkPurple,
             fontWeight: FontWeight.w800,
           ),
@@ -121,7 +122,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 14),
             Text(
               _errorMessage!,
-              style: GoogleFonts.manrope(
+              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                 color: DevDiaryColors.secondaryText,
                 fontWeight: FontWeight.w600,
               ),
@@ -149,7 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Text(
             'Riepilogo',
-            style: GoogleFonts.manrope(
+            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
               color: DevDiaryColors.darkPurple,
               fontSize: 28,
               fontWeight: FontWeight.w800,
@@ -193,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           Text(
             'Top tag',
-            style: GoogleFonts.manrope(
+            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
               color: DevDiaryColors.darkPurple,
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -215,7 +216,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               child: Text(
                 'Nessun tag disponibile',
-                style: GoogleFonts.manrope(
+                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                   color: DevDiaryColors.secondaryText,
                 ),
               ),
@@ -265,7 +266,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(width: 6),
                           Text(
                             tag.key,
-                            style: GoogleFonts.manrope(
+                            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                               color: DevDiaryColors.purple,
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -282,7 +283,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             child: Text(
                               tag.value.toString(),
-                              style: GoogleFonts.manrope(
+                              style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                                 color: DevDiaryColors.darkPurple,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
@@ -359,7 +360,7 @@ class _StatCard extends StatelessWidget {
 
           Text(
             value.toString(),
-            style: GoogleFonts.manrope(
+            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
               color: DevDiaryColors.darkPurple,
               fontSize: 34,
               fontWeight: FontWeight.w800,
@@ -370,7 +371,7 @@ class _StatCard extends StatelessWidget {
 
           Text(
             title,
-            style: GoogleFonts.manrope(
+            style: TextStyle(fontFamily: DevDiaryFonts.ui, 
               color: DevDiaryColors.secondaryText,
               fontSize: 13,
               fontWeight: FontWeight.w600,

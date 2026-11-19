@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:material_ui/material_ui.dart';
+import '../theme/devdiary_fonts.dart';
 
 import '../main.dart';
 import '../models/diary_entry.dart';
+import '../services/api_exception.dart';
 import '../services/diary_api_service.dart';
 import '../widgets/diary_entry_card.dart';
 import 'diary_form_screen.dart';
@@ -76,7 +77,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Impossibile caricare le note';
+        _errorMessage = e is ApiException ? e.message : 'Impossibile caricare le note';
         _isLoading = false;
       });
 
@@ -199,7 +200,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
               const SizedBox(width: 7),
               Text(
                 label,
-                style: GoogleFonts.manrope(
+                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                   color: selected
                       ? Colors.white
                       : DevDiaryColors.purple,
@@ -243,7 +244,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
               child: TextField(
                 controller: _searchController,
                 onChanged: _onSearchChanged,
-                style: GoogleFonts.manrope(
+                style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                   color: DevDiaryColors.text,
                   fontSize: 15,
                 ),
@@ -251,7 +252,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                   hintText: widget.initialOnlyFavorites
                       ? 'Cerca nei preferiti...'
                       : 'Cerca...',
-                  hintStyle: GoogleFonts.manrope(
+                  hintStyle: TextStyle(fontFamily: DevDiaryFonts.ui, 
                     color: DevDiaryColors.secondaryText,
                   ),
                   border: InputBorder.none,
@@ -333,7 +334,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                   widget.initialOnlyFavorites
                       ? 'Preferiti'
                       : 'Solo preferiti',
-                  style: GoogleFonts.manrope(
+                  style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                     color: DevDiaryColors.darkPurple,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
@@ -368,7 +369,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                 ),
                 label: Text(
                   'Azzera filtri',
-                  style: GoogleFonts.manrope(
+                  style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -396,7 +397,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                   children: [
                     Text(
                       _errorMessage!,
-                      style: GoogleFonts.manrope(
+                      style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                         color: DevDiaryColors.secondaryText,
                       ),
                     ),
@@ -426,7 +427,7 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                         widget.initialOnlyFavorites
                             ? 'Nessuna nota preferita'
                             : 'Nessun risultato',
-                        style: GoogleFonts.manrope(
+                        style: TextStyle(fontFamily: DevDiaryFonts.ui, 
                           color: DevDiaryColors.secondaryText,
                           fontWeight: FontWeight.w600,
                         ),
