@@ -66,6 +66,34 @@ GitHub sospende i workflow pianificati di un repository pubblico dopo 60 giorni 
 
 ## 4. Verifiche
 
+Pubblicazione del 19 novembre 2026: API `https://devdiary-api-yndc.onrender.com`, sito `https://devdiary-2a6a.onrender.com`.
+
+| Verifica | Esito | Note |
+|---|---|---|
+| API e database | OK | `GET /webhook/status` → `{"status":"OK","database":"OK"}` in circa 2,5 s a servizio sveglio |
+| Newman `Produzione (sola lettura)` | OK, 14/14 | 21 note di esempio caricate all'avvio; scrittura senza visitatore rifiutata |
+| CORS | OK | il sito è accettato con `content-type,x-demo-visitor`; a un'altra origine il server risponde con l'origine del sito, quindi il browser blocca |
+| Percorsi bloccati | OK | `/rest/settings`, `/`, `/webhook-test/…/../`, `//:/…`, `%2e%2e` → 404 |
+| Reset da GitHub Actions | OK | primo avvio manuale verde |
+| Sito | OK | si apre e mostra le note di esempio dall'API pubblica |
+| Avvio a freddo | non misurato | il reset da GitHub lo gestisce (verde); tempo esatto da misurare dopo 15 minuti di inattività |
+| X-Forwarded-For e limite di 60 richieste/minuto | non verificato | in sequenza ogni richiesta impiega circa 3 s, quindi non si arriva a 60 al minuto; 70 richieste in parallelo hanno saturato l'istanza gratuita (502 per circa un minuto, poi ripresa da sola). Il limite reale e il comportamento di Render sull'intestazione restano da verificare con un test più leggero |
+| Google Fonts | verificato in locale | nessuna richiesta a Google con la stessa build; in produzione non ricontrollato |
+
+**Capacità**: l'istanza gratuita (0,1 CPU) regge l'uso normale di una demo, ma qualche decina di richieste simultanee la satura per circa un minuto.
+
+## Se qualcosa non va
+
+| Sintomo | Causa probabile | Cosa fare |
+|---|---|---|
+| Il sito mostra "Impossibile raggiungere il server" su ogni pagina | `ALLOWED_ORIGINS` dell'API non coincide con l'indirizzo del sito (CORS), oppure `API_BASE_URL` del sito è sbagliato | Confronta i due valori con gli indirizzi reali; dopo la modifica rilancia il deploy |
+| Il sito mostra "Il server non risponde: potrebbe essere in avvio" | Il servizio gratuito si stava risvegliando | Riprova dopo un minuto |
+| L'API non parte, nei Logs c'è `configurazione non valida` | `ALLOWED_ORIGINS`, `DEMO_MODE` o `RESET_TOKEN` con un formato non ammesso | Correggi la variabile indicata nel messaggio |
+| `GET /webhook/status` risponde `"database":"ERROR"` | Stringa Atlas sbagliata o accesso di rete non aperto | Controlla `MONGODB_URI` e *Network Access* `0.0.0.0/0` su Atlas |
+| Il reset da GitHub fallisce con 401 | `RESET_TOKEN` su GitHub diverso da quello di Render | Ricopia il valore da Render |
+
+## 4. Verifiche
+
 Compilate dopo la pubblicazione (Task 7 del piano 2).
 
 | Verifica | Esito | Note |
