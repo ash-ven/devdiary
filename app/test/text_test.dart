@@ -1,5 +1,7 @@
 import 'package:dev_diary/models/diary_entry.dart';
+import 'package:dev_diary/text/activity.dart';
 import 'package:dev_diary/text/day_groups.dart';
+import 'package:dev_diary/ui/command_palette.dart';
 import 'package:dev_diary/text/highlight.dart';
 import 'package:dev_diary/text/markdown.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -85,5 +87,44 @@ void main() {
       '14 agosto',
       '14 agosto 2025',
     ]);
+  });
+
+  test('activity grid counts the last 26 weeks with fixed levels', () {
+    final now = DateTime(2026, 11, 19, 12); // giovedì
+    String iso(DateTime d) => d.toUtc().toIso8601String();
+    final created = iso(DateTime(2026, 11, 17, 9)); // martedì
+    final grid = activityGrid([
+      _entry(created),
+      _entry(iso(DateTime(2025, 1, 1))), // troppo vecchia
+    ], now);
+    expect(grid.length, 26);
+    expect(grid.last[1], 1);
+    expect(grid.expand((w) => w).fold(0, (a, b) => a + b), 1);
+    expect([0, 1, 2, 3, 4, 5, 6, 9].map(activityLevel), [
+      0,
+      1,
+      2,
+      2,
+      3,
+      3,
+      4,
+      4,
+    ]);
+  });
+
+  test('palette searches code too', () {
+    final withCode = DiaryEntry(
+      id: 'x',
+      title: 'Titolo',
+      content: 'testo',
+      type: 'snippet',
+      code: 'Object.values(id.buffer)',
+      tags: const [],
+      isFavorite: false,
+      createdAt: '',
+      updatedAt: '',
+    );
+    expect(paletteMatches([withCode], 'BUFFER').single.id, 'x');
+    expect(paletteMatches([withCode], 'assente'), isEmpty);
   });
 }

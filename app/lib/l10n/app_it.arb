@@ -58,8 +58,95 @@
   "dateAt": "{date}, ore {time}",
   "@dateAt": {
     "placeholders": {
-      "date": { "type": "String" },
-      "time": { "type": "String" }
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
     }
-  }
+  },
+  "themeAuto": "Auto",
+  "newNote": "Nuova nota",
+  "editNote": "Modifica nota",
+  "actionEdit": "Modifica",
+  "formTitle": "Titolo",
+  "formType": "Tipo",
+  "formTags": "Tag, separati da virgola",
+  "formContent": "Testo (Markdown)",
+  "formLanguage": "Linguaggio del codice",
+  "formCode": "Codice",
+  "save": "Salva",
+  "cancel": "Annulla",
+  "fieldRequired": "Campo obbligatorio",
+  "tooLong": "Al massimo {max} caratteri",
+  "@tooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "tooManyTags": "Al massimo 10 tag",
+  "tagTooLong": "Ogni tag al massimo 30 caratteri",
+  "saved": "Nota salvata",
+  "restore": "Ripristina",
+  "deleteForever": "Elimina definitivamente",
+  "deleteConfirmTitle": "Eliminare la nota per sempre?",
+  "deleteConfirmBody": "Non si potrà più recuperare.",
+  "restored": "Nota ripristinata",
+  "deleted": "Nota eliminata",
+  "dashTitle": "Il tuo diario",
+  "dashTotal": "Note in tutto: {count}",
+  "@dashTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashActivity": "Attività degli ultimi sei mesi",
+  "dashLess": "meno",
+  "dashMore": "più",
+  "dashByType": "Note per tipo",
+  "dashTopTags": "Tag più usati",
+  "dashLastErrors": "Ultimi errori risolti",
+  "dashEmpty": "Ancora niente da contare: crea la prima nota.",
+  "activityTooltip": "Settimana del {date}: {count} attività",
+  "@activityTooltip": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "panelTitle": "Richieste all'API",
+  "panelSubtitle": "cosa succede dietro ogni clic",
+  "panelEmpty": "Ancora nessuna richiesta.",
+  "wakeTitle": "Sto svegliando il server",
+  "wakeBody": "L'API è su un piano gratuito e dopo un po' di inattività si addormenta. Di solito si sveglia in meno di un minuto.",
+  "wakeElapsed": "{seconds} s trascorsi",
+  "@wakeElapsed": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "wakeGiveUp": "Il server non risponde ancora.",
+  "demoNotice": "È una demo: le note di esempio non si modificano, le tue le vedi solo tu e si cancellano ogni notte.",
+  "close": "Chiudi",
+  "settingsApi": "API",
+  "settingsApiAddress": "Indirizzo",
+  "settingsVisitor": "Identificativo anonimo",
+  "settingsVisitorBody": "Il browser conserva un codice casuale che separa le tue note da quelle degli altri visitatori. Non contiene dati personali.",
+  "settingsCode": "Codice del progetto",
+  "repoLink": "Repository su GitHub",
+  "readmeLink": "README",
+  "paletteHint": "Cerca una nota",
+  "paletteEmpty": "Nessuna nota trovata.",
+  "paletteShortcut": "Ricerca rapida (Ctrl K)"
 }

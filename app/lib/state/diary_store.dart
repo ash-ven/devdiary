@@ -8,7 +8,7 @@ import '../services/diary_api_service.dart';
 
 enum DiaryView { diary, favorites, dashboard, trash, settings }
 
-/// Stato condiviso del diario: vista, filtri, note caricate, selezione.
+/// Stato condiviso del diario: vista, filtri, note caricate, selezione, form.
 class DiaryStore extends ChangeNotifier {
   DiaryStore(this.api);
 
@@ -19,9 +19,16 @@ class DiaryStore extends ChangeNotifier {
   String? tag;
   String search = '';
   List<DiaryEntry> entries = [];
+
+  /// Tutte le note (senza filtri), per la dashboard.
+  List<DiaryEntry> all = [];
   String? selectedId;
   bool loading = false;
   ApiException? error;
+
+  /// Form aperto: nuova nota se [editing] è null, altrimenti modifica.
+  bool composing = false;
+  DiaryEntry? editing;
 
   /// null finché il primo controllo di /status non ha risposto.
   bool? apiOnline;
@@ -31,6 +38,11 @@ class DiaryStore extends ChangeNotifier {
 
   bool get hasFilters => type != null || tag != null || search.isNotEmpty;
 
+  bool get isListView =>
+      view == DiaryView.diary ||
+      view == DiaryView.favorites ||
+      view == DiaryView.trash;
+
   DiaryEntry? get selected {
     for (final e in entries) {
       if (e.id == selectedId) return e;
@@ -38,10 +50,10 @@ class DiaryStore extends ChangeNotifier {
     return null;
   }
 
-  /// Tag più usati tra le note caricate, al massimo [limit].
-  List<String> topTags([int limit = 8]) {
+  /// Tag più usati tra [source] (di solito le note caricate), al massimo [limit].
+  List<String> topTags([int limit = 8, List<DiaryEntry>? source]) {
     final counts = <String, int>{};
-    for (final e in entries) {
+    for (final e in source ?? entries) {
       for (final t in e.tags) {
         counts[t] = (counts[t] ?? 0) + 1;
       }
@@ -49,6 +61,19 @@ class DiaryStore extends ChangeNotifier {
     final sorted = counts.keys.toList()
       ..sort((a, b) => counts[b]!.compareTo(counts[a]!));
     return sorted.take(limit).toList();
+  }
+
+  /// Avvio: prima lo stato dell'API (3 s), poi il diario.
+  Future<void> start() async {
+    loading = true;
+    notifyListeners();
+    await checkStatus();
+    if (apiOnline == true) {
+      await load();
+    } else {
+      loading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> checkStatus() async {
@@ -88,16 +113,28 @@ class DiaryStore extends ChangeNotifier {
     }
   }
 
+  Future<void> loadAll() async {
+    try {
+      all = await api.getEntries();
+      error = null;
+    } on ApiException catch (e) {
+      error = e;
+    }
+    notifyListeners();
+  }
+
   void setView(DiaryView v) {
-    if (view == v) return;
+    composing = false;
+    editing = null;
+    if (view == v) {
+      notifyListeners();
+      return;
+    }
     view = v;
     selectedId = null;
     notifyListeners();
-    if (v == DiaryView.diary ||
-        v == DiaryView.favorites ||
-        v == DiaryView.trash) {
-      load();
-    }
+    if (isListView) load();
+    if (v == DiaryView.dashboard) loadAll();
   }
 
   void setType(String? value) {
@@ -109,6 +146,7 @@ class DiaryStore extends ChangeNotifier {
     tag = value;
     if (view != DiaryView.diary && view != DiaryView.favorites) {
       view = DiaryView.diary;
+      selectedId = null;
     }
     load();
   }
@@ -129,7 +167,15 @@ class DiaryStore extends ChangeNotifier {
 
   void select(String? id) {
     selectedId = id;
+    composing = false;
+    editing = null;
     notifyListeners();
+  }
+
+  /// Apre una nota da un'altra vista (ricerca rapida, dashboard).
+  void open(String id) {
+    if (!isListView) setView(DiaryView.diary);
+    select(id);
   }
 
   static const _sampleReadOnly = ApiException(
@@ -137,6 +183,42 @@ class DiaryStore extends ChangeNotifier {
     'SAMPLE_READ_ONLY',
     'Le note di esempio non si modificano',
   );
+
+  void startNew() {
+    if (view == DiaryView.trash || !isListView) setView(DiaryView.diary);
+    composing = true;
+    editing = null;
+    notifyListeners();
+  }
+
+  void startEdit(DiaryEntry entry) {
+    if (entry.isSample) throw _sampleReadOnly;
+    composing = true;
+    editing = entry;
+    notifyListeners();
+  }
+
+  void closeForm() {
+    composing = false;
+    editing = null;
+    notifyListeners();
+  }
+
+  /// Salva il form (crea o aggiorna) e seleziona la nota salvata.
+  Future<void> save(DiaryEntry draft) async {
+    final String id;
+    if (editing != null) {
+      await api.updateEntry(draft);
+      id = draft.id;
+    } else {
+      id = await api.createEntry(draft);
+    }
+    composing = false;
+    editing = null;
+    await load();
+    selectedId = id;
+    notifyListeners();
+  }
 
   Future<void> toggleFavorite(DiaryEntry entry) async {
     if (entry.isSample) throw _sampleReadOnly;
@@ -152,12 +234,26 @@ class DiaryStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> moveToTrash(DiaryEntry entry) async {
-    if (entry.isSample) throw _sampleReadOnly;
-    await api.deleteEntry(entry.id);
+  void _drop(DiaryEntry entry) {
     entries = entries.where((e) => e.id != entry.id).toList();
     if (selectedId == entry.id) selectedId = null;
     notifyListeners();
+  }
+
+  Future<void> moveToTrash(DiaryEntry entry) async {
+    if (entry.isSample) throw _sampleReadOnly;
+    await api.deleteEntry(entry.id);
+    _drop(entry);
+  }
+
+  Future<void> restore(DiaryEntry entry) async {
+    await api.restoreEntry(entry.id);
+    _drop(entry);
+  }
+
+  Future<void> deletePermanently(DiaryEntry entry) async {
+    await api.deleteEntry(entry.id, permanent: true);
+    _drop(entry);
   }
 
   @override

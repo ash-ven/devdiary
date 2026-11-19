@@ -34,9 +34,53 @@ class NoteSheet extends StatelessWidget {
       }
     }
 
+    Future<void> confirmDelete() async {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(l.deleteConfirmTitle),
+          content: Text(l.deleteConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: t.accentText,
+                foregroundColor: t.paper,
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l.deleteForever),
+            ),
+          ],
+        ),
+      );
+      if (ok == true) {
+        await run(() => diary.deletePermanently(entry), l.deleted);
+      }
+    }
+
     final actions = inTrash
-        ? const <Widget>[]
+        ? [
+            _ActionButton(
+              icon: Icons.restore,
+              label: l.restore,
+              onPressed: () => run(() => diary.restore(entry), l.restored),
+            ),
+            _ActionButton(
+              icon: Icons.delete_forever_outlined,
+              label: l.deleteForever,
+              accent: true,
+              onPressed: confirmDelete,
+            ),
+          ]
         : [
+            _ActionButton(
+              icon: Icons.edit_outlined,
+              label: l.actionEdit,
+              onPressed: entry.isSample ? null : () => diary.startEdit(entry),
+            ),
             _ActionButton(
               icon: entry.isFavorite ? Icons.star : Icons.star_border,
               label: entry.isFavorite ? l.actionUnfavorite : l.actionFavorite,

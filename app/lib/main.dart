@@ -13,8 +13,9 @@ Future<void> main() async {
   DiaryApiService.defaultVisitorId = await VisitorStore().load();
   final settings = SettingsStore();
   await settings.load();
-  final diary = DiaryStore(DiaryApiService());
+  final diary = DiaryStore(
+    DiaryApiService(statusTimeout: const Duration(seconds: 3)),
+  );
   runApp(DevDiaryApp(diary: diary, settings: settings));
-  diary.checkStatus();
-  diary.load();
+  diary.start();
 }

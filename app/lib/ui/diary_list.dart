@@ -29,16 +29,35 @@ class DiaryList extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Semantics(
-                header: true,
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: t.ink,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
+              const DemoNotice(),
+              Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          color: t.ink,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  if (diary.view != DiaryView.trash &&
+                      MediaQuery.sizeOf(context).width >= 820)
+                    FilledButton.icon(
+                      onPressed: diary.startNew,
+                      icon: const Icon(Icons.add, size: 18),
+                      label: Text(l.newNote),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: t.primary,
+                        foregroundColor: t.onPrimary,
+                        minimumSize: const Size(44, 40),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 12),
               TextField(
@@ -307,6 +326,42 @@ class _Message extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Avviso discreto al primo accesso: è una demo. Una volta chiuso non torna.
+class DemoNotice extends StatelessWidget {
+  const DemoNotice({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    final l = context.l10n;
+    final settings = DevDiaryScope.of(context).settings;
+    if (settings.demoNoticeDismissed) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+      decoration: BoxDecoration(
+        color: t.markBgNote,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l.demoNotice,
+              style: TextStyle(color: t.markTxNote, fontSize: 13.5),
+            ),
+          ),
+          IconButton(
+            tooltip: l.close,
+            icon: Icon(Icons.close, size: 18, color: t.markTxNote),
+            onPressed: settings.dismissDemoNotice,
+          ),
+        ],
       ),
     );
   }
