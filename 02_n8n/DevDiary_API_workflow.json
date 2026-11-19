@@ -1,0 +1,1492 @@
+{
+  "name": "DevDiary API",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/diary",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        336
+      ],
+      "id": "72da48a6-7f97-40ac-a0f7-86e741506026",
+      "name": "GET Diary",
+      "webhookId": "903eee7e-0bde-48ca-a765-c5948904733e"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/diary",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        752
+      ],
+      "id": "6598b98d-5045-4bac-9312-2558b124fded",
+      "name": "POST Diary",
+      "webhookId": "f1505a1e-f7cb-4e51-90b3-974f5c4fd992"
+    },
+    {
+      "parameters": {
+        "path": "/status",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        16
+      ],
+      "id": "85df9880-aeab-4d21-bf43-848ce1e513e7",
+      "name": "GET Status",
+      "webhookId": "443b0b41-2beb-46ec-89e0-1dc681bab9ce"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8a35d8bd-d993-457a-9d68-bec6d51739c6",
+              "name": "Status",
+              "value": "Ok",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        16
+      ],
+      "id": "6e9de804-8676-4670-a701-788bf4158b13",
+      "name": "Build Status Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $json.query ?? {};\n\nconst filter = {};\n\n// filtro per type\nif (query.type) {\n  filter.type = query.type.toString().trim().toLowerCase();\n}\n\n// filtro preferiti\nif (query.favorite !== undefined && query.favorite !== '') {\n  filter.isFavorite = query.favorite.toString().toLowerCase() === 'true';\n}\n\n// filtro per tag\nif (query.tag) {\n  filter.tags = query.tag.toString().trim().toLowerCase();\n}\n\n// ricerca in titolo oppure contenuto\nif (query.search) {\n  const search = query.search.toString().trim();\n\n  filter.$or = [\n    {\n      title: {\n        $regex: search,\n        $options: 'i'\n      }\n    },\n    {\n      content: {\n        $regex: search,\n        $options: 'i'\n      }\n    }\n  ];\n}\n\nreturn [{\n  json: {\n    filter\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        336
+      ],
+      "id": "27e50e2f-d0a1-46f1-b7b4-ae3265116b06",
+      "name": "Build Diary Filter"
+    },
+    {
+      "parameters": {
+        "collection": "entries",
+        "options": {
+          "sort": "={\n  \"createdAt\": -1\n}"
+        },
+        "query": "={{ JSON.stringify($json.filter) }}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        336
+      ],
+      "id": "b2a6af46-3b0a-411f-927b-7803d5087c7f",
+      "name": "Find Diary Entries",
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9e16abfb-b629-4e14-a9fb-c3402f59d04b",
+              "leftValue": "={{ !$json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        640,
+        336
+      ],
+      "id": "c7d27524-642a-4c2e-8611-b635f403d552",
+      "name": "Database Result OK?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": true,\n  \"message\": \"Database non disponibile\"\n}",
+        "options": {
+          "responseCode": 503
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        880,
+        480
+      ],
+      "id": "4ae955e7-c2ae-4977-a483-a63998cba662",
+      "name": "503 - Database Unavailable"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $input.all().map(item => item.json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        880,
+        224
+      ],
+      "id": "6c0aca71-914f-4808-8d2d-84c032693945",
+      "name": "200 - Diary List"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\n\n// Validazione titolo e content obbligatori\nif (!body.title || body.title.toString().trim() === '') {\n  return [{\n    json: {\n      error: true,\n      message: \"Il titolo è obbligatorio\"\n    }\n  }];\n}\n\nif (!body.content || body.content.toString().trim() === '') {\n  return [{\n    json: {\n      error: true,\n      message: \"Il contenuto è obbligatorio\"\n    }\n  }];\n}\n\n// Validazione type\nconst allowedTypes = ['note', 'snippet', 'idea', 'errore', 'link'];\n\nlet type = (body.type ?? 'note')\n  .toString()\n  .trim()\n  .toLowerCase();\n\nif (type === '') {\n  type = 'note';\n}\n\nif (!allowedTypes.includes(type)) {\n  return [{\n    json: {\n      error: true,\n      message: \"Type non valido\"\n    }\n  }];\n}\n\n// Normalizzazione tags\nlet tags = body.tags ?? [];\n\nif (typeof tags === 'string') {\n  tags = tags.split(',');\n}\n\ntags = tags\n  .map(tag => tag.toString().trim().toLowerCase())\n  .filter(tag => tag.length > 0);\n\nconst now = new Date().toISOString();\n\nreturn [{\n  json: {\n    title: body.title.toString().trim(),\n    content: body.content.toString().trim(),\n    type,\n    language: body.language ?? null,\n    code: body.code ?? null,\n    tags,\n    isFavorite: body.isFavorite ?? false,\n    createdAt: now,\n    updatedAt: now\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        752
+      ],
+      "id": "9fa6fd7b-c39a-48be-99da-08c9b327bbbe",
+      "name": "Validate & Normalize Entry"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "181248c7-8d60-4a4f-9d5f-cd3bb3e7306c",
+              "leftValue": "={{$json.error}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        752
+      ],
+      "id": "412b14b7-73e2-4c97-ada0-88e06b31960c",
+      "name": "Validate & Normalize Entry1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        640,
+        656
+      ],
+      "id": "cffad552-ca90-408f-8f9b-fbce15a43365",
+      "name": "400 - Invalid Entry"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "entries",
+        "fields": "title,content,type,language,code,tags,isFavorite,createdAt,updatedAt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        848
+      ],
+      "id": "d2534a89-6301-4103-9013-b68dada23127",
+      "name": "Insert Diary Entry",
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Nota creata correttamente\"\n}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        864,
+        848
+      ],
+      "id": "4212f9e3-7d8c-4420-91eb-5148889ad963",
+      "name": "201 - Entry Created"
+    },
+    {
+      "parameters": {
+        "path": "diary/detail",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        1168
+      ],
+      "id": "81e00206-4f25-4020-897e-ac8774fe8115",
+      "name": "GET Diary Detail",
+      "webhookId": "09eca373-4499-4284-9745-df093ac90c5b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const id = $json.query.id;\n\nif (!id) {\n  return [{\n    json: {\n      error: true,\n      message: \"Parametro id obbligatorio\"\n    }\n  }];\n}\nreturn [{\n  json: {\n    id,\n    lunghezza: id ? id.length : null\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        1168
+      ],
+      "id": "0aa2f078-be13-4dc7-ab7d-a1754e4c7bd7",
+      "name": "Validate Detail ID"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "181248c7-8d60-4a4f-9d5f-cd3bb3e7306c",
+              "leftValue": "={{$json.error}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        1168
+      ],
+      "id": "cfb2368c-339b-4db0-a2d9-5fdb5dd23aaa",
+      "name": "ID Valid?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": true,\n  \"message\": \"Parametro id obbligatorio\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        640,
+        1072
+      ],
+      "id": "41b75328-7c58-4139-856c-90f27ba6f88d",
+      "name": "400 - Invalid ID"
+    },
+    {
+      "parameters": {
+        "collection": "entries",
+        "options": {
+          "limit": 1
+        },
+        "query": "={{ JSON.stringify({ \"_id\": $json.id }) }}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        1264
+      ],
+      "id": "e7bf8183-f1d5-4bb2-96a1-32c517cc97ab",
+      "name": "Find Entry by ID",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ac2b5304-c225-41ea-964f-d337add0c887",
+              "leftValue": "={{$json._id}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        864,
+        1264
+      ],
+      "id": "e8b27232-f8f4-41c7-90d0-3449492e2184",
+      "name": "Entry Found?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1088,
+        1168
+      ],
+      "id": "b0ea942c-680f-4466-96f6-c2a82b0c9d8b",
+      "name": "200 - Diary Detail"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": true,\n  \"message\": \"Nota non trovata\"\n}",
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1088,
+        1360
+      ],
+      "id": "b4b706f1-c1ae-4f83-af06-9adbb8000d1e",
+      "name": "404 - Entry Not Found"
+    },
+    {
+      "parameters": {
+        "httpMethod": "PUT",
+        "path": "/diary",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        1680
+      ],
+      "id": "fb65504f-0b03-4149-b798-5548987431ee",
+      "name": "PUT Diary",
+      "webhookId": "bc2a3eca-21aa-42ae-83eb-b662f3507e7e"
+    },
+    {
+      "parameters": {
+        "jsCode": "const id = $json.query?.id;\nconst body = $json.body ?? {};\n\nconst validTypes = [\"note\", \"snippet\", \"idea\", \"errore\", \"link\"];\n\nif (!id) {\n  return [{\n    json: {\n      error: true,\n      message: \"Parametro id obbligatorio\"\n    }\n  }];\n}\n\nif (!/^[a-fA-F0-9]{24}$/.test(id)) {\n  return [{\n    json: {\n      error: true,\n      message: \"ID non valido\"\n    }\n  }];\n}\n\nconst title = String(body.title ?? \"\").trim();\nconst content = String(body.content ?? \"\").trim();\nconst type = String(body.type ?? \"note\").trim().toLowerCase();\n\nif (!title) {\n  return [{\n    json: {\n      error: true,\n      message: \"Il titolo è obbligatorio\"\n    }\n  }];\n}\n\nif (!content) {\n  return [{\n    json: {\n      error: true,\n      message: \"Il contenuto è obbligatorio\"\n    }\n  }];\n}\n\nif (!validTypes.includes(type)) {\n  return [{\n    json: {\n      error: true,\n      message: \"Tipo non valido\"\n    }\n  }];\n}\n\nlet tags = body.tags ?? [];\n\nif (typeof tags === \"string\") {\n  tags = tags.split(\",\");\n}\n\nif (!Array.isArray(tags)) {\n  tags = [];\n}\n\ntags = tags\n  .map(tag => String(tag).trim().toLowerCase())\n  .filter(tag => tag.length > 0);\n\nreturn [{\n  json: {\n    error: false,\n    _id: id,\n    title,\n    content,\n    type,\n    language: body.language ?? null,\n    code: body.code ?? null,\n    tags,\n    isFavorite: body.isFavorite === true,\n    updatedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        1680
+      ],
+      "id": "c008ab9e-89ac-47c7-97db-5c47e5f0529a",
+      "name": "Validate Update Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6217c89e-f310-4fc5-8bd2-934d12cbc83d",
+              "leftValue": "={{$json.error}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        1680
+      ],
+      "id": "05231abb-f03a-44c3-807b-f20fd869f9a0",
+      "name": "Update Request Valid?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        640,
+        1584
+      ],
+      "id": "37f37dd1-d738-4d5b-a1e6-9119267d8899",
+      "name": "400 - Invalid Update"
+    },
+    {
+      "parameters": {
+        "collection": "entries",
+        "options": {},
+        "query": "={{ JSON.stringify({ \"_id\": $json._id }) }}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        1776
+      ],
+      "id": "ef1425b7-a10c-4445-ae57-efb60bf4d7b7",
+      "name": "Find Entry to Update",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "76e582c2-aab2-423a-849c-f5faa67a72a7",
+              "leftValue": "={{ !!$json._id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        864,
+        1776
+      ],
+      "id": "b84086fb-658e-4f1b-8225-b0b36a9afae7",
+      "name": "Entry Found? - 2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const nuoviDati = $('Validate Update Request').item.json;\nconst notaTrovata = $json;\n\nreturn [{\n  json: {\n    _id: notaTrovata._id,\n    title: nuoviDati.title,\n    content: nuoviDati.content,\n    type: nuoviDati.type,\n    language: nuoviDati.language,\n    code: nuoviDati.code,\n    tags: nuoviDati.tags,\n    isFavorite: nuoviDati.isFavorite,\n    updatedAt: nuoviDati.updatedAt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        1680
+      ],
+      "id": "ce3a56e0-6603-4855-9f37-f603454cecdf",
+      "name": "Prepare Updated Entry"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": true,\n  \"message\": \"Nota non trovata\"\n}",
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1088,
+        1872
+      ],
+      "id": "7e546cdb-6e75-4b20-990e-e1142e539eff",
+      "name": "404 - Entry Not Found1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "entries",
+        "updateKey": "_id",
+        "fields": "title,content,type,language,code,tags,isFavorite,updatedAt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1312,
+        1680
+      ],
+      "id": "1c1042df-91f6-45f6-ba18-6e26dc74eadb",
+      "name": "Update Diary Entry",
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Nota aggiornata correttamente\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1536,
+        1680
+      ],
+      "id": "07159df1-ba84-4644-9b91-c1b11d2db252",
+      "name": "200 - Entry Updated"
+    },
+    {
+      "parameters": {
+        "httpMethod": "DELETE",
+        "path": "/diary",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        2192
+      ],
+      "id": "cc6b8131-1f16-4c77-b681-1b410a115a30",
+      "name": "DELETE Diary",
+      "webhookId": "bc2a3eca-21aa-42ae-83eb-b662f3507e7e"
+    },
+    {
+      "parameters": {
+        "jsCode": "const id = $json.query?.id;\n\n// ID mancante\nif (!id) {\n  return [{\n    json: {\n      error: true,\n      message: \"Parametro id obbligatorio\"\n    }\n  }];\n}\n\n// ID formalmente non valido\nif (!/^[a-fA-F0-9]{24}$/.test(id)) {\n  return [{\n    json: {\n      error: true,\n      message: \"ID non valido\"\n    }\n  }];\n}\n\n// Tutto ok\nreturn [{\n  json: {\n    error: false,\n    _id: id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        2192
+      ],
+      "id": "6c3f48cf-4179-4ec3-8e23-bfa371a353e7",
+      "name": "Validate Delete ID"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6217c89e-f310-4fc5-8bd2-934d12cbc83d",
+              "leftValue": "={{$json.error}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        2192
+      ],
+      "id": "fd405c5b-0018-4667-9348-57b2bfb9c57f",
+      "name": "Delete ID Valid?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        640,
+        2096
+      ],
+      "id": "6b7aa3cd-6dd7-4615-a608-04e2e906e502",
+      "name": "400 - Invalid Delete"
+    },
+    {
+      "parameters": {
+        "collection": "entries",
+        "options": {},
+        "query": "={{ JSON.stringify({ \"_id\": $json._id }) }}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        2288
+      ],
+      "id": "12f28585-9a69-4208-9181-1bea1f54047e",
+      "name": "Find Entry to Delete",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        2288
+      ],
+      "id": "cc84d67d-a68c-4f2b-9ff8-4f8bacd34037",
+      "name": "Prepare Delete Check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "76e582c2-aab2-423a-849c-f5faa67a72a7",
+              "leftValue": "={{ !!$json._id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1088,
+        2288
+      ],
+      "id": "421fb401-66cd-4a4c-ac33-c03f3f4f7c10",
+      "name": "Entry Found? -3"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "collection": "entries",
+        "query": "={{ JSON.stringify({\n  \"$expr\": {\n    \"$eq\": [\n      { \"$toString\": \"$_id\" },\n      $('Validate Delete ID').item.json._id\n    ]\n  }\n}) }}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1312,
+        2192
+      ],
+      "id": "0c88e379-1143-49ec-8244-9eb4b68333dc",
+      "name": "Delete Diary Entry",
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Nota aggiornata correttamente\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1536,
+        2192
+      ],
+      "id": "561bf9e5-10b1-4369-b1a7-e4ddbdf5ba3d",
+      "name": "200 - Entry Deleted"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": true,\n  \"message\": \"Nota non trovata\"\n}",
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1312,
+        2384
+      ],
+      "id": "5e106eac-82f9-4bb5-8aac-4882d4299f3f",
+      "name": "404 - Entry Not Found2"
+    },
+    {
+      "parameters": {
+        "path": "/diary/export/json",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        2608
+      ],
+      "id": "2b6e542b-3bd7-48f7-95b0-f959ebdf9275",
+      "name": "GET Diary Export JSON",
+      "webhookId": "d4295b17-ace8-4905-a60d-4208a919cbb2"
+    },
+    {
+      "parameters": {
+        "collection": "entries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        2608
+      ],
+      "id": "18668328-9342-4001-82c3-426eb83678cf",
+      "name": "Find Entries for JSON Export",
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        2608
+      ],
+      "id": "08f1ddec-c6f1-4b66-89db-97dfa2481336",
+      "name": "200 - JSON Export"
+    },
+    {
+      "parameters": {
+        "path": "/diary/export/markdown",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        2832
+      ],
+      "id": "5ca21bef-ab9f-497b-ad78-a7b434c3c059",
+      "name": "GET Diary Export Markdown",
+      "webhookId": "8c151f89-dbe2-4d3a-8d92-84b4fb7dff82"
+    },
+    {
+      "parameters": {
+        "collection": "entries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        2832
+      ],
+      "id": "225c174d-5a7b-470c-a851-1598669fc781",
+      "name": "Find Entries for Markdown Export",
+      "credentials": {
+        "mongoDb": {
+          "id": "XxVRGSGikKpeeW6o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.markdown }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        640,
+        2832
+      ],
+      "id": "b3bf7f31-95f3-434a-8576-b3d9a8f9fe9d",
+      "name": "200 - Markdown Export"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nlet markdown = '# DevDiary Export\\n\\n';\n\nfor (const item of items) {\n  const entry = item.json;\n\n  markdown += `## ${entry.title ?? 'Senza titolo'}\\n\\n`;\n  markdown += `**Tipo:** ${entry.type ?? 'note'}\\n\\n`;\n\n  if (Array.isArray(entry.tags) && entry.tags.length > 0) {\n    markdown += `**Tag:** ${entry.tags.map(tag => `#${tag}`).join(' ')}\\n\\n`;\n  }\n\n  markdown += `${entry.content ?? ''}\\n\\n`;\n\n  if (entry.language) {\n    markdown += `**Linguaggio:** ${entry.language}\\n\\n`;\n  }\n\n  if (entry.code) {\n    markdown += '```' + (entry.language ?? '') + '\\n';\n    markdown += entry.code + '\\n';\n    markdown += '```\\n\\n';\n  }\n\n  markdown += '---\\n\\n';\n}\n\nreturn [\n  {\n    json: {\n      markdown\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        2832
+      ],
+      "id": "11868e67-a1e5-4a3b-9c0b-00fc467434ab",
+      "name": "Build Markdown Export"
+    },
+    {
+      "parameters": {
+        "content": "Gestione errore database\nSe MongoDB non è raggiungibile, il risultato viene intercettato prima della risposta HTTP.",
+        "height": 256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "5c188b52-8bae-41d5-954c-05a776e5e5dc",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Validazione nuova nota\nControlla che title e content siano presenti e che type sia valido. Normalizza inoltre tipo e tag prima dell'inserimento in MongoDB.",
+        "height": 288,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        624
+      ],
+      "typeVersion": 1,
+      "id": "7fde870f-b043-4ba0-94af-f1ec4acfd151",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Validazione ID\nGli endpoint che lavorano su una singola nota ricevono l'ID tramite query parameter ?id=.... L'ID viene validato prima di interrogare MongoDB.",
+        "height": 832,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        1520
+      ],
+      "typeVersion": 1,
+      "id": "317a55ee-7eb4-4ca0-b40d-bb0a1d13a474",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Export Markdown\nRecupera tutte le note da MongoDB e le converte in un documento Markdown leggibile. Per ogni entry vengono esportati titolo, tipo, tag, contenuto e, quando presente, il blocco di codice con il relativo linguaggio",
+        "height": 240,
+        "width": 832,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        2768
+      ],
+      "typeVersion": 1,
+      "id": "857a080d-a421-4106-ae6d-a8545f16b30d",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET Diary": {
+      "main": [
+        [
+          {
+            "node": "Build Diary Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Diary": {
+      "main": [
+        [
+          {
+            "node": "Validate & Normalize Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Status": {
+      "main": [
+        [
+          {
+            "node": "Build Status Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Diary Filter": {
+      "main": [
+        [
+          {
+            "node": "Find Diary Entries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Diary Entries": {
+      "main": [
+        [
+          {
+            "node": "Database Result OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Database Result OK?": {
+      "main": [
+        [
+          {
+            "node": "200 - Diary List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "503 - Database Unavailable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Normalize Entry": {
+      "main": [
+        [
+          {
+            "node": "Validate & Normalize Entry1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Normalize Entry1": {
+      "main": [
+        [
+          {
+            "node": "400 - Invalid Entry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Diary Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Diary Entry": {
+      "main": [
+        [
+          {
+            "node": "201 - Entry Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Diary Detail": {
+      "main": [
+        [
+          {
+            "node": "Validate Detail ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Detail ID": {
+      "main": [
+        [
+          {
+            "node": "ID Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ID Valid?": {
+      "main": [
+        [
+          {
+            "node": "400 - Invalid ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Entry by ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "400 - Invalid ID": {
+      "main": [
+        []
+      ]
+    },
+    "Find Entry by ID": {
+      "main": [
+        [
+          {
+            "node": "Entry Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entry Found?": {
+      "main": [
+        [
+          {
+            "node": "200 - Diary Detail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "404 - Entry Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "200 - Diary Detail": {
+      "main": [
+        []
+      ]
+    },
+    "PUT Diary": {
+      "main": [
+        [
+          {
+            "node": "Validate Update Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Update Request": {
+      "main": [
+        [
+          {
+            "node": "Update Request Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Request Valid?": {
+      "main": [
+        [
+          {
+            "node": "400 - Invalid Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Entry to Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Entry to Update": {
+      "main": [
+        [
+          {
+            "node": "Entry Found? - 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entry Found? - 2": {
+      "main": [
+        [
+          {
+            "node": "Prepare Updated Entry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "404 - Entry Not Found1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Updated Entry": {
+      "main": [
+        [
+          {
+            "node": "Update Diary Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Diary Entry": {
+      "main": [
+        [
+          {
+            "node": "200 - Entry Updated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Diary": {
+      "main": [
+        [
+          {
+            "node": "Validate Delete ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Delete ID": {
+      "main": [
+        [
+          {
+            "node": "Delete ID Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete ID Valid?": {
+      "main": [
+        [
+          {
+            "node": "400 - Invalid Delete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Entry to Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Entry to Delete": {
+      "main": [
+        [
+          {
+            "node": "Prepare Delete Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Delete Check": {
+      "main": [
+        [
+          {
+            "node": "Entry Found? -3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entry Found? -3": {
+      "main": [
+        [
+          {
+            "node": "Delete Diary Entry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "404 - Entry Not Found2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Diary Entry": {
+      "main": [
+        [
+          {
+            "node": "200 - Entry Deleted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Diary Export JSON": {
+      "main": [
+        [
+          {
+            "node": "Find Entries for JSON Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Entries for JSON Export": {
+      "main": [
+        [
+          {
+            "node": "200 - JSON Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Diary Export Markdown": {
+      "main": [
+        [
+          {
+            "node": "Find Entries for Markdown Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Entries for Markdown Export": {
+      "main": [
+        [
+          {
+            "node": "Build Markdown Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Markdown Export": {
+      "main": [
+        [
+          {
+            "node": "200 - Markdown Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8152cb86-2b4b-4d9a-883e-831c18db8092",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2f4c030ca5a91da5844fc46a8a504179c1d00959cd4317266fccd7d315c73fde"
+  },
+  "id": "scOoYGA5QuN83KfV",
+  "tags": []
+}

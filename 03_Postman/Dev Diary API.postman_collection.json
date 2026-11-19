@@ -1,0 +1,184 @@
+{
+  "info": {
+    "_postman_id": "68371805-b8bd-484c-9deb-657cc2f806a5",
+    "name": "Dev Diary API",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54223427",
+    "_collection_link": "https://go.postman.co/collection/54223427-68371805-b8bd-484c-9deb-657cc2f806a5?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "GET Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5678/webhook/status",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5678",
+          "path": [
+            "webhook",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET diary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "Production_URL/diary",
+          "host": [
+            "Production_URL"
+          ],
+          "path": [
+            "diary"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET diary detail",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5678/webhook/diary/detail?id=123456789012345678901234",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5678",
+          "path": [
+            "webhook",
+            "diary",
+            "detail"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "123456789012345678901234"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST diary",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\": \"Errore n8n\",\r\n  \"content\": \"Problema nella configurazione del webhook\",\r\n  \"type\": \"errore\",\r\n  \"tags\": [\"n8n\", \"api\"],\r\n  \"isFavorite\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5678/webhook/diary",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5678",
+          "path": [
+            "webhook",
+            "diary"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PUT diary",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\": \"TEST MODIFICA PUT\",\r\n  \"content\": \"Questa nota è stata modificata con PUT\",\r\n  \"type\": \"note\",\r\n  \"language\": null,\r\n  \"code\": null,\r\n  \"tags\": [\"put\", \"test\"],\r\n  \"isFavorite\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5678/webhook/diary?id=6a65e1123a1011c01fb9a7f0",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5678",
+          "path": [
+            "webhook",
+            "diary"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "6a65e1123a1011c01fb9a7f0",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE diary",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5678/webhook/diary?id=6a65e1123a1011c01fb9a7f0",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5678",
+          "path": [
+            "webhook",
+            "diary"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "6a65e1123a1011c01fb9a7f0",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET export JSON",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "GET export Markdown",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ]
+}
