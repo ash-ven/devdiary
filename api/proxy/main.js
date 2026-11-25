@@ -15,8 +15,12 @@ for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => n8n.kill(sig));
 // Ultima rete di sicurezza: un errore inatteso si registra, ma non deve spegnere l'API pubblica.
 process.on('uncaughtException', (err) => console.error('DevDiary API: eccezione non gestita', err));
 
+// I webhook diventano utilizzabili solo quando n8n ha attivato i workflow.
+let webhooksReady = false;
+
 const proxy = createProxy({
   target: N8N,
+  isReady: () => webhooksReady,
   rateLimit: Number(process.env.RATE_LIMIT_PER_MINUTE || 60),
   allowedOrigins: process.env.ALLOWED_ORIGINS || '*',
   trustedHops: Number(process.env.TRUSTED_PROXY_HOPS ?? 1),
@@ -33,19 +37,22 @@ async function seedIfEmpty() {
     } catch { /* n8n non ancora in ascolto */ }
     await sleep(1000);
   }
-  for (let attempt = 0; attempt < 10; attempt++) {
+  for (let attempt = 0; attempt < 30; attempt++) {
     try {
       const res = await fetch(`${N8N}/webhook/demo/reset?ifEmpty=true`, {
         method: 'POST',
         headers: { 'x-reset-token': process.env.RESET_TOKEN || '' },
       });
       if (res.status !== 404) {
+        webhooksReady = true;
         console.log(`DevDiary API: seed iniziale, risposta ${res.status}`);
         return;
       }
     } catch { /* riprova */ }
     await sleep(2000);
   }
+  // Non si blocca l'API per sempre: si apre comunque e si registra il problema.
+  webhooksReady = true;
   console.log('DevDiary API: webhook di reset non disponibile, seed iniziale saltato');
 }
 seedIfEmpty();

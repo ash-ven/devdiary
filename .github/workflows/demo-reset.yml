@@ -24,10 +24,14 @@ jobs:
             echo "::warning::Secret RESET_TOKEN o variabile API_BASE_URL non impostati: reset saltato."
             exit 0
           fi
-          # I tentativi ripetuti coprono il risveglio del servizio gratuito di Render (circa un minuto);
-          # un 401 (token sbagliato) non viene ripetuto.
+          # 1. Sveglia il servizio gratuito di Render e aspetta che l'API risponda (fino a ~5 minuti):
+          #    all'avvio il proxy risponde 503 finché n8n non ha attivato i webhook.
+          curl --silent --show-error --fail --output /dev/null \
+            --retry 20 --retry-delay 15 --retry-all-errors --max-time 120 \
+            "$API_BASE_URL/status" || { echo "::error::L'API non si è svegliata"; exit 1; }
+          # 2. Reset. Si ripetono solo gli errori temporanei (5xx): un 401 (token sbagliato) fallisce subito.
           response=$(curl --silent --show-error --fail-with-body \
-            --retry 6 --retry-delay 20 --retry-connrefused --max-time 120 \
+            --retry 5 --retry-delay 10 --max-time 120 \
             -X POST -H "X-Reset-Token: $RESET_TOKEN" \
             "$API_BASE_URL/demo/reset") || { echo "$response"; echo "::error::Reset non riuscito"; exit 1; }
           echo "$response"

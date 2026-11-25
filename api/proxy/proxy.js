@@ -103,7 +103,7 @@ function checkJsonBody(req, pathname, buffer) {
 
 function createProxy({
   target, maxBody = 32768, rateLimit = 60, windowMs = 60000, now = Date.now,
-  allowedOrigins = '*', trustedHops = 1, maxEntries = 20000,
+  allowedOrigins = '*', trustedHops = 1, maxEntries = 20000, isReady = () => true,
 } = {}) {
   const upstream = new URL(target);
   const allowed = String(allowedOrigins).split(',').map((s) => s.trim()).filter(Boolean);
@@ -142,6 +142,13 @@ function createProxy({
         req.resume();
         return sendError(req, res, 429, 'RATE_LIMITED', { 'retry-after': String(retryAfter) });
       }
+    }
+
+    // All'avvio n8n risponde prima di aver registrato i webhook (404): finché non sono pronti
+    // si risponde 503, che i client (anche curl --retry) riprovano. /healthz passa sempre.
+    if (targetPath.pathname !== '/healthz' && req.method !== 'OPTIONS' && !isReady()) {
+      req.resume();
+      return sendError(req, res, 503, 'API_STARTING', { 'retry-after': '5' });
     }
 
     const chunks = [];

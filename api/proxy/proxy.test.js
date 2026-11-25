@@ -248,3 +248,16 @@ test('rate limiter keeps memory bounded and fast', () => {
   limiter.hit('1.1.1.1');
   assert.equal(limiter.size(), 1, 'le voci scadute vengono rimosse');
 });
+
+test('answers 503 API_STARTING until the webhooks are ready, healthz still passes', async () => {
+  let ready = false;
+  await withProxy({ isReady: () => ready }, async (base, port) => {
+    const early = await raw(port, '/webhook/demo/reset', { method: 'POST' });
+    assert.equal(early.status, 503);
+    assert.equal(json(early).code, 'API_STARTING');
+    assert.equal(early.headers['retry-after'], '5');
+    assert.equal((await raw(port, '/healthz')).status, 200);
+    ready = true;
+    assert.equal((await raw(port, '/webhook/demo/reset', { method: 'POST' })).status, 200);
+  });
+});
